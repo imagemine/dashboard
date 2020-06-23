@@ -16,15 +16,17 @@ package api
 
 import (
 	"encoding/json"
+  "github.com/kubernetes/dashboard/src/app/backend/client/envvar"
 
-	corev1 "k8s.io/api/core/v1"
+  corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
+// SettingsConfigMapName contains a name of config map, that stores settings.
+var SettingsConfigMapName = envvar.EnvVariable("DASHBOARD_SETTINGS_NAME", "kubernetes-dashboard-settings")
+
 const (
-	// SettingsConfigMapName contains a name of config map, that stores settings.
-	SettingsConfigMapName = "kubernetes-dashboard-settings"
 
 	// ConfigMapKindName is a name of config map kind.
 	ConfigMapKindName = "ConfigMap"

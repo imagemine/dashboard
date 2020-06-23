@@ -15,23 +15,24 @@
 package api
 
 import (
-	"github.com/emicklei/go-restful"
-	v1 "k8s.io/api/authorization/v1"
-	apiextensionsclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/tools/clientcmd/api"
-
-	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
-	pluginclientset "github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned"
+  "github.com/emicklei/go-restful"
+  authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
+  "github.com/kubernetes/dashboard/src/app/backend/client/envvar"
+  pluginclientset "github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned"
+  v1 "k8s.io/api/authorization/v1"
+  apiextensionsclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+  "k8s.io/apimachinery/pkg/runtime"
+  "k8s.io/client-go/kubernetes"
+  "k8s.io/client-go/rest"
+  "k8s.io/client-go/tools/clientcmd"
+  "k8s.io/client-go/tools/clientcmd/api"
 )
 
-const (
-	// CsrfTokenSecretName is the resource information that are used as csrf token storage. Can be accessible by multiple dashboard replicas.
-	CsrfTokenSecretName = "kubernetes-dashboard-csrf"
 
+	// CsrfTokenSecretName is the resource information that are used as csrf token storage. Can be accessible by multiple dashboard replicas.
+var CsrfTokenSecretName = envvar.EnvVariable("CSRF_TOKEN_NAME", "kubernetes-dashboard-csrf")
+
+const (
 	// CsrfTokenSecretData is the name of the data var that holds the csrf token inside the secret.
 	CsrfTokenSecretData = "csrf"
 )
