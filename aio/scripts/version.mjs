@@ -25,7 +25,6 @@ const gitInfo = gitDescribe.gitDescribeSync({
 });
 
 gitInfo.packageVersion = config.version;
-gitInfo.semver = {}
 Object.assign(gitInfo.semver, {
   loose: false,
   options: {

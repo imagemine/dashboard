@@ -17,9 +17,9 @@ name: Continuous Deployment - App
 on:
   push:
     branches: [ dashboard-var-name-ext ]
-  # create:
-  #   tags:
-  #     - 'v*.*.*'
+  create:
+    tags:
+      - 'v*.*.*'
 
 permissions:
   contents: read
