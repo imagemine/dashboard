@@ -78,6 +78,9 @@ type TypeMeta struct {
 
 	// Scalable represents whether or not an object is scalable.
 	Scalable bool `json:"scalable,omitempty"`
+
+	// Restartable represents whether or not an object is restartable.
+	Restartable bool `json:"restartable,omitempty"`
 }
 
 // ListMeta describes list of objects, i.e. holds information about pagination options set for the list.
@@ -102,8 +105,9 @@ func NewObjectMeta(k8SObjectMeta metaV1.ObjectMeta) ObjectMeta {
 // NewTypeMeta creates new type mete for the resource kind.
 func NewTypeMeta(kind ResourceKind) TypeMeta {
 	return TypeMeta{
-		Kind:     kind,
-		Scalable: kind.Scalable(),
+		Kind:        kind,
+		Scalable:    kind.Scalable(),
+		Restartable: kind.Restartable(),
 	}
 }
 
@@ -143,6 +147,8 @@ const (
 	ResourceKindRoleBinding              = "rolebinding"
 	ResourceKindPlugin                   = "plugin"
 	ResourceKindEndpoint                 = "endpoint"
+	ResourceKindNetworkPolicy            = "networkpolicy"
+	ResourceKindIngressClass             = "ingressclass"
 )
 
 // Scalable method return whether ResourceKind is scalable.
@@ -163,6 +169,21 @@ func (k ResourceKind) Scalable() bool {
 	return false
 }
 
+// Restartable method return whether ResourceKind is restartable.
+func (k ResourceKind) Restartable() bool {
+	restartable := []ResourceKind{
+		ResourceKindDeployment,
+	}
+
+	for _, kind := range restartable {
+		if k == kind {
+			return true
+		}
+	}
+
+	return false
+}
+
 // ClientType represents type of client that is used to perform generic operations on resources.
 // Different resources belong to different client, i.e. Deployments belongs to extension client
 // and StatefulSets to apps client.
@@ -171,7 +192,6 @@ type ClientType string
 // List of client types supported by the UI.
 const (
 	ClientTypeDefault             = "restclient"
-	ClientTypeExtensionClient     = "extensionclient"
 	ClientTypeAppsClient          = "appsclient"
 	ClientTypeBatchClient         = "batchclient"
 	ClientTypeBetaBatchClient     = "betabatchclient"
@@ -179,6 +199,7 @@ const (
 	ClientTypeStorageClient       = "storageclient"
 	ClientTypeRbacClient          = "rbacclient"
 	ClientTypeAPIExtensionsClient = "apiextensionsclient"
+	ClientTypeNetworkingClient    = "networkingclient"
 	ClientTypePluginsClient       = "plugin"
 )
 
@@ -202,7 +223,8 @@ var KindToAPIMapping = map[string]APIMapping{
 	ResourceKindDeployment:               {"deployments", ClientTypeAppsClient, true},
 	ResourceKindEvent:                    {"events", ClientTypeDefault, true},
 	ResourceKindHorizontalPodAutoscaler:  {"horizontalpodautoscalers", ClientTypeAutoscalingClient, true},
-	ResourceKindIngress:                  {"ingresses", ClientTypeExtensionClient, true},
+	ResourceKindIngress:                  {"ingresses", ClientTypeNetworkingClient, true},
+	ResourceKindIngressClass:             {"ingressclasses", ClientTypeNetworkingClient, false},
 	ResourceKindJob:                      {"jobs", ClientTypeBatchClient, true},
 	ResourceKindCronJob:                  {"cronjobs", ClientTypeBetaBatchClient, true},
 	ResourceKindLimitRange:               {"limitrange", ClientTypeDefault, true},
@@ -221,7 +243,11 @@ var KindToAPIMapping = map[string]APIMapping{
 	ResourceKindStatefulSet:              {"statefulsets", ClientTypeAppsClient, true},
 	ResourceKindStorageClass:             {"storageclasses", ClientTypeStorageClient, false},
 	ResourceKindEndpoint:                 {"endpoints", ClientTypeDefault, true},
+	ResourceKindNetworkPolicy:            {"networkpolicies", ClientTypeNetworkingClient, true},
 	ResourceKindClusterRole:              {"clusterroles", ClientTypeRbacClient, false},
+	ResourceKindClusterRoleBinding:       {"clusterrolebindings", ClientTypeRbacClient, false},
+	ResourceKindRole:                     {"roles", ClientTypeRbacClient, true},
+	ResourceKindRoleBinding:              {"rolebindings", ClientTypeRbacClient, true},
 	ResourceKindPlugin:                   {"plugins", ClientTypePluginsClient, true},
 }
 

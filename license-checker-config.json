@@ -1,21 +1,24 @@
 {
   "ignore": [
-    "*", "docs", "i18n",
-    ".cached_tools", ".git", ".github", ".tmp", "coverage", "cypress", ".idea",
-    "aio/test-resources",
-    "**/*.json", "**/*.yaml", "**/*.svg", "**/*.txt", "**/*.md", "**/OWNERS", "**/.helmignore", "**/*.lock"
+    "*", "docs", "i18n", ".husky", ".github",
+    ".cached_tools", ".git", ".github/ISSUE_TEMPLATE", ".tmp", "coverage", "cypress", ".idea", ".vscode",
+    "aio/test-resources", "vendor", ".angular",
+    "**/*.json", "**/*.yaml", "**/*.svg", "**/*.txt", "**/*.md", "**/OWNERS",
+    "**/.helmignore", "**/*.lock", "**/config_repos","**/.DS_Store"
   ],
   "license": "aio/scripts/license-header.txt",
   "defaultFormat": {
     "eachLine": {
       "prepend": "# "
-    }
+    },
+    "append": ""
   },
   "licenseFormats": {
-    "go|ts|js|scss": {
+    "go|ts|js|scss|mjs|cjs": {
       "eachLine": {
         "prepend": "// "
-      }
+      },
+      "append": ""
     },
     "html": {
       "prepend": "<!--",

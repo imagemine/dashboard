@@ -12,19 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'rxjs/add/operator/first';
-import 'rxjs/add/operator/switchMap';
-
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {Injectable} from '@angular/core';
+import {Inject, Injectable} from '@angular/core';
 import {Router} from '@angular/router';
+import {IConfig} from '@api/root.ui';
 import {CookieService} from 'ngx-cookie-service';
 import {of} from 'rxjs';
-import {Observable} from 'rxjs/Observable';
-import {first, switchMap} from 'rxjs/operators';
-import {AuthResponse, CsrfToken, LoginSpec, LoginStatus} from 'typings/backendapi';
+import {Observable} from 'rxjs';
+import {switchMap, take} from 'rxjs/operators';
+import {AuthResponse, CsrfToken, LoginSpec, LoginStatus} from 'typings/root.api';
+import {CONFIG_DI_TOKEN} from '../../../index.config';
 
-import {CONFIG} from '../../../index.config';
 import {K8SError} from '../../errors/errors';
 
 import {CsrfTokenService} from './csrftoken';
@@ -32,14 +30,13 @@ import {KdStateService} from './state';
 
 @Injectable()
 export class AuthService {
-  private readonly _config = CONFIG;
-
   constructor(
     private readonly cookies_: CookieService,
     private readonly router_: Router,
     private readonly http_: HttpClient,
     private readonly csrfTokenService_: CsrfTokenService,
     private readonly stateService_: KdStateService,
+    @Inject(CONFIG_DI_TOKEN) private readonly config_: IConfig
   ) {
     this.init_();
   }
@@ -58,17 +55,21 @@ export class AuthService {
     }
 
     if (this.isCurrentProtocolSecure_()) {
-      this.cookies_.set(this._config.authTokenCookieName, token, null, null, null, true, 'Strict');
+      this.cookies_.set(this.config_.authTokenCookieName, token, null, null, null, true, 'Strict');
       return;
     }
 
     if (this.isCurrentDomainSecure_()) {
-      this.cookies_.set(this._config.authTokenCookieName, token, null, null, location.hostname, false, 'Strict');
+      this.cookies_.set(this.config_.authTokenCookieName, token, null, null, location.hostname, false, 'Strict');
     }
   }
 
+  private setUsernameCookie_(name: string): void {
+    this.cookies_.set(this.config_.usernameCookieName, name);
+  }
+
   private getTokenCookie_(): string {
-    return this.cookies_.get(this._config.authTokenCookieName) || '';
+    return this.cookies_.get(this.config_.authTokenCookieName) || '';
   }
 
   private isCurrentDomainSecure_(): boolean {
@@ -80,8 +81,9 @@ export class AuthService {
   }
 
   removeAuthCookies(): void {
-    this.cookies_.delete(this._config.authTokenCookieName);
-    this.cookies_.delete(this._config.skipLoginPageCookieName);
+    this.cookies_.delete(this.config_.authTokenCookieName);
+    this.cookies_.delete(this.config_.skipLoginPageCookieName);
+    this.cookies_.delete(this.config_.usernameCookieName);
   }
 
   /**
@@ -93,18 +95,19 @@ export class AuthService {
       .pipe(
         switchMap((csrfToken: CsrfToken) =>
           this.http_.post<AuthResponse>('api/v1/login', loginSpec, {
-            headers: new HttpHeaders().set(this._config.csrfHeaderName, csrfToken.token),
-          }),
-        ),
+            headers: new HttpHeaders().set(this.config_.csrfHeaderName, csrfToken.token),
+          })
+        )
       )
       .pipe(
         switchMap((authResponse: AuthResponse) => {
           if (authResponse.jweToken.length !== 0 && authResponse.errors.length === 0) {
             this.setTokenCookie_(authResponse.jweToken);
+            this.setUsernameCookie_(authResponse.name);
           }
 
           return of(authResponse.errors);
-        }),
+        })
       );
   }
 
@@ -129,12 +132,12 @@ export class AuthService {
             'api/v1/token/refresh',
             {jweToken: token},
             {
-              headers: new HttpHeaders().set(this._config.csrfHeaderName, csrfToken.token),
-            },
+              headers: new HttpHeaders().set(this.config_.csrfHeaderName, csrfToken.token),
+            }
           );
-        }),
+        })
       )
-      .pipe(first())
+      .pipe(take(1))
       .subscribe((authResponse: AuthResponse) => {
         if (authResponse.jweToken.length !== 0 && authResponse.errors.length === 0) {
           this.setTokenCookie_(authResponse.jweToken);
@@ -164,7 +167,7 @@ export class AuthService {
 
   skipLoginPage(skip: boolean): void {
     this.removeAuthCookies();
-    this.cookies_.set(this._config.skipLoginPageCookieName, skip.toString(), null, null, null, false, 'Strict');
+    this.cookies_.set(this.config_.skipLoginPageCookieName, skip.toString(), null, null, null, false, 'Strict');
   }
 
   /**
@@ -173,7 +176,7 @@ export class AuthService {
    * In case cookie is not set login page will also be visible.
    */
   isLoginPageEnabled(): boolean {
-    return !(this.cookies_.get(this._config.skipLoginPageCookieName) === 'true');
+    return !(this.cookies_.get(this.config_.skipLoginPageCookieName) === 'true');
   }
 
   /**

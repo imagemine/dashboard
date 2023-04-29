@@ -14,19 +14,20 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {Observable} from 'rxjs/Observable';
-import {Ingress, IngressList} from 'typings/backendapi';
+import {Observable} from 'rxjs';
+import {Ingress, IngressList} from 'typings/root.api';
 
-import {ResourceListBase} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {NamespacedResourceService} from '../../../services/resource/resource';
+import {ResourceListBase} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({
   selector: 'kd-ingress-list',
   templateUrl: './template.html',
+  styleUrls: ['./style.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IngressListComponent extends ResourceListBase<IngressList, Ingress> {
@@ -35,7 +36,7 @@ export class IngressListComponent extends ResourceListBase<IngressList, Ingress>
   constructor(
     private readonly ingress_: NamespacedResourceService<IngressList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('ingress', notifications, cdr);
     this.id = ListIdentifier.ingress;
@@ -57,7 +58,7 @@ export class IngressListComponent extends ResourceListBase<IngressList, Ingress>
   }
 
   getDisplayColumns(): string[] {
-    return ['name', 'labels', 'endpoints', 'created'];
+    return ['name', 'labels', 'endpoints', 'hosts', 'created'];
   }
 
   private shouldShowNamespaceColumn_(): boolean {

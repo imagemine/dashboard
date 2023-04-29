@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@import '../../../../../variables';
+@use '../../../../../variables' as *;
 
 .kd-user-help ::ng-deep {
   font-size: $body-font-size-base;
@@ -20,10 +20,5 @@
   .material-icons {
     font-size: $caption-font-size-base;
     vertical-align: middle;
-  }
-
-  a {
-    opacity: 1;
-    text-decoration: none;
   }
 }

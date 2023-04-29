@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import {Component, Input} from '@angular/core';
-import {ObjectMeta} from '@api/backendapi';
-import {KdStateService} from '../../../../services/global/state';
+import {ObjectMeta} from '@api/root.api';
+import {KdStateService} from '@common/services/global/state';
 
 @Component({
   selector: 'kd-actionbar-detail-exec',

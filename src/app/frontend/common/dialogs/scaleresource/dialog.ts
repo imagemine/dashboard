@@ -15,7 +15,7 @@
 import {HttpClient} from '@angular/common/http';
 import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {ReplicaCounts} from '@api/backendapi';
+import {ReplicaCounts} from '@api/root.api';
 
 import {ResourceMeta} from '../../services/global/actionbar';
 
@@ -30,7 +30,7 @@ export class ScaleResourceDialog implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<ScaleResourceDialog>,
     @Inject(MAT_DIALOG_DATA) public data: ResourceMeta,
-    private readonly http_: HttpClient,
+    private readonly http_: HttpClient
   ) {}
 
   ngOnInit(): void {

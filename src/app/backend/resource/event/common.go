@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -135,12 +136,20 @@ func GetNodeEvents(client kubernetes.Interface, dsQuery *dataselect.DataSelectQu
 		return &eventList, err
 	}
 
-	events, err := client.CoreV1().Events(v1.NamespaceAll).Search(scheme, node)
-	if err != nil {
-		return &eventList, err
+	eventsInvUID, err := client.CoreV1().Events(v1.NamespaceAll).Search(scheme, node)
+	_, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return &eventList, criticalError
 	}
 
-	eventList = CreateEventList(FillEventsType(events.Items), dsQuery)
+	node.UID = types.UID(node.Name)
+	eventsInvName, err := client.CoreV1().Events(v1.NamespaceAll).Search(scheme, node)
+	_, criticalError = errors.HandleError(err)
+	if criticalError != nil {
+		return &eventList, criticalError
+	}
+
+	eventList = CreateEventList(FillEventsType(append(eventsInvName.Items, eventsInvUID.Items...)), dsQuery)
 	return &eventList, nil
 }
 
@@ -168,18 +177,32 @@ func FillEventsType(events []v1.Event) []v1.Event {
 
 // ToEvent converts event api Event to Event model object.
 func ToEvent(event v1.Event) common.Event {
+	firstTimestamp, lastTimestamp := event.FirstTimestamp, event.LastTimestamp
+	eventTime := metaV1.NewTime(event.EventTime.Time)
+
+	if firstTimestamp.IsZero() {
+		firstTimestamp = eventTime
+	}
+
+	if lastTimestamp.IsZero() {
+		lastTimestamp = firstTimestamp
+	}
+
 	result := common.Event{
-		ObjectMeta:      api.NewObjectMeta(event.ObjectMeta),
-		TypeMeta:        api.NewTypeMeta(api.ResourceKindEvent),
-		Message:         event.Message,
-		SourceComponent: event.Source.Component,
-		SourceHost:      event.Source.Host,
-		SubObject:       event.InvolvedObject.FieldPath,
-		Count:           event.Count,
-		FirstSeen:       event.FirstTimestamp,
-		LastSeen:        event.LastTimestamp,
-		Reason:          event.Reason,
-		Type:            event.Type,
+		ObjectMeta:         api.NewObjectMeta(event.ObjectMeta),
+		TypeMeta:           api.NewTypeMeta(api.ResourceKindEvent),
+		Message:            event.Message,
+		SourceComponent:    event.Source.Component,
+		SourceHost:         event.Source.Host,
+		SubObject:          event.InvolvedObject.FieldPath,
+		SubObjectKind:      event.InvolvedObject.Kind,
+		SubObjectName:      event.InvolvedObject.Name,
+		SubObjectNamespace: event.InvolvedObject.Namespace,
+		Count:              event.Count,
+		FirstSeen:          firstTimestamp,
+		LastSeen:           lastTimestamp,
+		Reason:             event.Reason,
+		Type:               event.Type,
 	}
 
 	return result
@@ -225,8 +248,14 @@ func (self EventCell) GetProperty(name dataselect.PropertyName) dataselect.Compa
 		return dataselect.StdComparableString(self.ObjectMeta.Name)
 	case dataselect.CreationTimestampProperty:
 		return dataselect.StdComparableTime(self.ObjectMeta.CreationTimestamp.Time)
+	case dataselect.FirstSeenProperty:
+		return dataselect.StdComparableTime(self.FirstTimestamp.Time)
+	case dataselect.LastSeenProperty:
+		return dataselect.StdComparableTime(self.LastTimestamp.Time)
 	case dataselect.NamespaceProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Namespace)
+	case dataselect.ReasonProperty:
+		return dataselect.StdComparableString(self.Reason)
 	default:
 		// if name is not supported then just return a constant dummy value, sort will have no effect.
 		return nil

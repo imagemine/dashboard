@@ -13,8 +13,7 @@
 // limitations under the License.
 
 import {Component, Input} from '@angular/core';
-import {ObjectMeta, TypeMeta} from '@api/backendapi';
-import {ResourceMeta} from '../../../services/global/actionbar';
+import {ObjectMeta, TypeMeta} from '@api/root.api';
 
 @Component({
   selector: 'kd-actionbar-detail-actions',

@@ -14,8 +14,8 @@
 
 import {Component, Input} from '@angular/core';
 
-import {ResourceMeta} from '../../../../services/global/actionbar';
-import {KdStateService} from '../../../../services/global/state';
+import {ResourceMeta} from '@common/services/global/actionbar';
+import {KdStateService} from '@common/services/global/state';
 
 @Component({
   selector: 'kd-actionbar-detail-logs',
@@ -31,7 +31,7 @@ export class ActionbarDetailLogsComponent {
       'log',
       this.resourceMeta.objectMeta.name,
       this.resourceMeta.objectMeta.namespace,
-      this.resourceMeta.typeMeta.kind,
+      this.resourceMeta.typeMeta.kind
     );
   }
 }

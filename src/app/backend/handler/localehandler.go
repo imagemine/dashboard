@@ -16,7 +16,6 @@ package handler
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -54,7 +53,7 @@ func CreateLocaleHandler() *LocaleHandler {
 
 func getSupportedLocales(configFile string) ([]language.Tag, error) {
 	// read config file
-	localesFile, err := ioutil.ReadFile(configFile)
+	localesFile, err := os.ReadFile(configFile)
 	if err != nil {
 		return []language.Tag{}, err
 	}
@@ -92,10 +91,26 @@ func (handler *LocaleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	if r.URL.EscapedPath() == "/" || r.URL.EscapedPath() == "/index.html" {
 		// Do not store the html page in the cache. If the user is to click on 'switch language',
 		// we want a different index.html (for the right locale) to be served when the page refreshes.
-		w.Header().Add("Cache-Control", "no-store")
+		w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
 	}
-	acceptLanguage := os.Getenv("ACCEPT_LANGUAGE")
-	if acceptLanguage == "" {
+
+	// Disable directory listing.
+	if r.URL.Path != "/" && strings.HasSuffix(r.URL.Path, "/") {
+		http.NotFound(w, r)
+		return
+	}
+
+	acceptLanguage := ""
+	cookie, err := r.Cookie("lang")
+	if err == nil {
+		acceptLanguage = cookie.Value
+	}
+
+	if len(acceptLanguage) == 0 {
+		acceptLanguage = os.Getenv("ACCEPT_LANGUAGE")
+	}
+
+	if len(acceptLanguage) == 0 {
 		acceptLanguage = r.Header.Get("Accept-Language")
 	}
 

@@ -13,9 +13,8 @@
 // limitations under the License.
 
 import {Component, Input} from '@angular/core';
-import {PinnedResource} from '@api/backendapi';
-import {PinnerService} from '../../../common/services/global/pinner';
-import {Resource} from '../../../common/services/resource/endpoint';
+import {PinnedResource} from '@api/root.api';
+import {PinnerService} from '@common/services/global/pinner';
 
 @Component({
   selector: 'kd-pinner-nav',
@@ -46,5 +45,9 @@ export class PinnerNavComponent {
 
   unpin(resource: PinnedResource): void {
     this.pinner_.unpinResource(resource);
+  }
+
+  getDisplayName(resource: PinnedResource): string {
+    return resource.displayName.replace(/([A-Z]+)/g, ' $1').replace(/([A-Z][a-z])/g, ' $1');
   }
 }

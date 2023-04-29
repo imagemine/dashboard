@@ -31,13 +31,14 @@ const (
 )
 
 // This file contains all errors that should be kept in sync with:
-// 'src/app/frontend/common/errorhandling/errors.js' and localized on frontend side.
+// 'src/app/frontend/common/errors/errors.ts' and localized on frontend side.
 
 // partialsToErrorsMap map structure:
 // Key - unique partial string that can be used to differentiate error messages
 // Value - unique error code string that frontend can use to localize error message created using
-// 		   pattern MSG_<VIEW>_<CAUSE_OF_ERROR>_ERROR
-//		   <VIEW> - optional
+//
+//	pattern MSG_<VIEW>_<CAUSE_OF_ERROR>_ERROR
+//	<VIEW> - optional
 var partialsToErrorsMap = map[string]string{
 	"does not match the namespace":                               MsgDeployNamespaceMismatchError,
 	"empty namespace may not be set":                             MsgDeployEmptyNamespaceError,

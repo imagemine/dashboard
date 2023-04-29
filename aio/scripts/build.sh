@@ -32,20 +32,30 @@ function build::frontend {
   say "\nBuilding localized frontend"
   mkdir -p ${FRONTEND_DIR}
   ${NG_BIN} build \
-            --aot \
-            --prod \
+            --configuration production \
             --localize \
             --outputPath=${FRONTEND_DIR}
+
+  # Avoid locale caching due to the same output file naming
+  # We'll add language code prefix to the generated main javascript file.
+  languages=($(ls ${FRONTEND_DIR}))
+  for language in "${languages[@]}"; do
+    localeDir=${FRONTEND_DIR}/${language}
+    filename=("$(find "${localeDir}" -name 'main.*.js' -exec basename {} \;)")
+
+    mv "${localeDir}/${filename}" "${localeDir}/${language}.${filename}"
+    perl -i -pe"s/${filename}/${language}.${filename}/" "${localeDir}/index.html"
+  done
 }
 
 function build::backend {
   say "\nBuilding backend"
-  ${GULP_BIN} backend:prod
+  make prod-backend
 }
 
 function build::backend::cross {
   say "\nBuilding backends for all supported architectures"
-  ${GULP_BIN} backend:prod:cross
+  make prod-backend-cross
 }
 
 function copy::frontend {
@@ -103,7 +113,7 @@ START=$(date +%s)
 parse::args "$@"
 clean
 
-npm run postversion
+make ensure-version
 
 if [ "${FRONTEND_ONLY}" = true ] ; then
   build::frontend

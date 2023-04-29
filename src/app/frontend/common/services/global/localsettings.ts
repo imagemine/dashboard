@@ -13,22 +13,21 @@
 // limitations under the License.
 
 import {Injectable} from '@angular/core';
-import {LocalSettings} from '@api/backendapi';
-import {CookieService} from 'ngx-cookie-service';
 
+import {LocalSettings} from '@api/root.api';
 import {ThemeService} from './theme';
 
 @Injectable()
 export class LocalSettingsService {
-  private readonly cookieName_ = 'localSettings';
+  private readonly _settingsKey = 'localSettings';
   private settings_: LocalSettings = {
-    isThemeDark: false,
+    theme: ThemeService.SystemTheme,
   };
 
-  constructor(private readonly theme_: ThemeService, private readonly cookies_: CookieService) {}
+  constructor(private readonly theme_: ThemeService) {}
 
   init(): void {
-    const cookieValue = this.cookies_.get(this.cookieName_);
+    const cookieValue = localStorage.getItem(this._settingsKey);
     if (cookieValue && cookieValue.length > 0) {
       this.settings_ = JSON.parse(cookieValue);
     }
@@ -38,13 +37,13 @@ export class LocalSettingsService {
     return this.settings_;
   }
 
-  handleThemeChange(isThemeDark: boolean): void {
-    this.settings_.isThemeDark = isThemeDark;
+  handleThemeChange(theme: string): void {
+    this.settings_.theme = theme;
+    this.theme_.theme = theme;
     this.updateCookie_();
-    this.theme_.switchTheme(!this.settings_.isThemeDark);
   }
 
   updateCookie_(): void {
-    this.cookies_.set(this.cookieName_, JSON.stringify(this.settings_), null, null, null, false, 'Strict');
+    localStorage.setItem(this._settingsKey, JSON.stringify(this.settings_));
   }
 }

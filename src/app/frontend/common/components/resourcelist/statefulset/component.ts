@@ -14,14 +14,15 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {Event, Metric, StatefulSet, StatefulSetList} from '@api/backendapi';
-import {Observable} from 'rxjs/Observable';
-import {ResourceListWithStatuses} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {NamespacedResourceService} from '../../../services/resource/resource';
+import {Event, Metric, StatefulSet, StatefulSetList} from '@api/root.api';
+import {Observable} from 'rxjs';
+import {ResourceListWithStatuses} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+import {Status} from '../statuses';
 
 @Component({
   selector: 'kd-stateful-set-list',
@@ -36,16 +37,23 @@ export class StatefulSetListComponent extends ResourceListWithStatuses<StatefulS
   constructor(
     private readonly statefulSet_: NamespacedResourceService<StatefulSetList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('statefulset', notifications, cdr);
     this.id = ListIdentifier.statefulSet;
     this.groupId = ListGroupIdentifier.workloads;
 
     // Register status icon handlers
-    this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState);
-    this.registerBinding(this.icon.timelapse, 'kd-muted', this.isInPendingState);
-    this.registerBinding(this.icon.error, 'kd-error', this.isInErrorState);
+    this.registerBinding(
+      'kd-success',
+      r => r.podInfo.warnings.length === 0 && r.podInfo.pending === 0 && r.podInfo.running === r.podInfo.desired
+    );
+    this.registerBinding(
+      'kd-muted',
+      r => r.podInfo.warnings.length === 0 && (r.podInfo.pending > 0 || r.podInfo.running !== r.podInfo.desired),
+      Status.Pending
+    );
+    this.registerBinding('kd-error', r => r.podInfo.warnings.length > 0, Status.Error);
 
     // Register action columns.
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);
@@ -63,27 +71,8 @@ export class StatefulSetListComponent extends ResourceListWithStatuses<StatefulS
     return statefulSetList.statefulSets;
   }
 
-  isInErrorState(resource: StatefulSet): boolean {
-    return resource.podInfo.warnings.length > 0;
-  }
-
-  isInPendingState(resource: StatefulSet): boolean {
-    return (
-      resource.podInfo.warnings.length === 0 &&
-      (resource.podInfo.pending > 0 || resource.podInfo.running !== resource.podInfo.desired)
-    );
-  }
-
-  isInSuccessState(resource: StatefulSet): boolean {
-    return (
-      resource.podInfo.warnings.length === 0 &&
-      resource.podInfo.pending === 0 &&
-      resource.podInfo.running === resource.podInfo.desired
-    );
-  }
-
   getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'labels', 'pods', 'created', 'images'];
+    return ['statusicon', 'name', 'images', 'labels', 'pods', 'created'];
   }
 
   hasErrors(statefulSet: StatefulSet): boolean {

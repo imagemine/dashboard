@@ -26,24 +26,25 @@ limitations under the License.
     <kd-property *ngIf="service?.type">
       <div key
            i18n>Type</div>
-      <div value>{{service?.type}}</div>
+      <div value>{{ service?.type }}</div>
     </kd-property>
     <kd-property *ngIf="service?.clusterIP">
       <div key
            i18n>Cluster IP</div>
-      <div value>{{service?.clusterIP}}</div>
+      <div value>{{ service?.clusterIP }}</div>
     </kd-property>
     <kd-property *ngIf="service?.sessionAffinity">
       <div key
            i18n>Session Affinity</div>
-      <div value>{{service?.sessionAffinity}}</div>
+      <div value>{{ service?.sessionAffinity }}</div>
     </kd-property>
     <kd-property *ngIf="service?.selector"
                  fxFlex="100">
       <div key
            i18n>Selector</div>
       <div value>
-        <kd-chips [map]="service?.selector"></kd-chips>
+        <kd-chips [map]="service?.selector"
+                  [displayAll]="true"></kd-chips>
       </div>
     </kd-property>
   </div>
@@ -53,5 +54,7 @@ limitations under the License.
                        [initialized]="isInitialized"></kd-endpoint-card-list>
 
 <kd-pod-list [endpoint]="podListEndpoint"></kd-pod-list>
+
+<kd-ingress-list [endpoint]="ingressListEndpoint"></kd-ingress-list>
 
 <kd-event-list [endpoint]="eventListEndpoint"></kd-event-list>

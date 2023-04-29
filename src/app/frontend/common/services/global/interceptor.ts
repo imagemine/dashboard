@@ -13,24 +13,26 @@
 // limitations under the License.
 
 import {HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
-import {Injectable} from '@angular/core';
+import {Inject, Injectable} from '@angular/core';
+import {IConfig} from '@api/root.ui';
 import {CookieService} from 'ngx-cookie-service';
-import {Observable} from 'rxjs/Observable';
-import {CONFIG} from '../../../index.config';
+import {Observable} from 'rxjs';
+import {CONFIG_DI_TOKEN} from '../../../index.config';
 
-/* tslint:disable */
-// We can disable tslint for this file as any is required here.
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor(private readonly cookies_: CookieService) {}
+  constructor(
+    private readonly cookies_: CookieService,
+    @Inject(CONFIG_DI_TOKEN) private readonly appConfig_: IConfig
+  ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const authCookie = this.cookies_.get(CONFIG.authTokenCookieName);
+    const authCookie = this.cookies_.get(this.appConfig_.authTokenCookieName);
     // Filter requests made to our backend starting with 'api/v1' and append request header
     // with token stored in a cookie.
     if (req.url.startsWith('api/v1') && authCookie.length) {
       const authReq = req.clone({
-        headers: req.headers.set(CONFIG.authTokenHeaderName, authCookie),
+        headers: req.headers.set(this.appConfig_.authTokenHeaderName, authCookie),
       });
 
       return next.handle(authReq);
@@ -39,4 +41,3 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(req);
   }
 }
-/* tslint:enable */

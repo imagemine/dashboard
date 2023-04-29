@@ -14,12 +14,12 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {Observable} from 'rxjs/Observable';
-import {Secret, SecretList} from 'typings/backendapi';
-import {ResourceListBase} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {NamespacedResourceService} from '../../../services/resource/resource';
+import {Observable} from 'rxjs';
+import {Secret, SecretList} from 'typings/root.api';
+import {ResourceListBase} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
@@ -35,7 +35,7 @@ export class SecretListComponent extends ResourceListBase<SecretList, Secret> {
   constructor(
     private readonly secret_: NamespacedResourceService<SecretList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('secret', notifications, cdr);
     this.id = ListIdentifier.secret;

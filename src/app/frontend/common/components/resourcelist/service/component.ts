@@ -14,15 +14,16 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {Observable} from 'rxjs/Observable';
-import {Service, ServiceList} from 'typings/backendapi';
+import {Observable} from 'rxjs';
+import {Service, ServiceList} from 'typings/root.api';
 
-import {ResourceListWithStatuses} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {NamespacedResourceService} from '../../../services/resource/resource';
+import {ResourceListWithStatuses} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+import {Status, StatusClass} from '../statuses';
 
 @Component({
   selector: 'kd-service-list',
@@ -35,15 +36,15 @@ export class ServiceListComponent extends ResourceListWithStatuses<ServiceList, 
   constructor(
     private readonly service_: NamespacedResourceService<ServiceList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('service', notifications, cdr);
     this.id = ListIdentifier.service;
     this.groupId = ListGroupIdentifier.discovery;
 
     // Register status icon handlers
-    this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState.bind(this));
-    this.registerBinding(this.icon.timelapse, 'kd-muted', this.isInPendingState.bind(this));
+    this.registerBinding(StatusClass.Success, r => this.isInSuccessState(r), Status.Success);
+    this.registerBinding(StatusClass.Warning, r => !this.isInSuccessState(r), Status.Pending);
 
     // Register action columns.
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);
@@ -58,10 +59,6 @@ export class ServiceListComponent extends ResourceListWithStatuses<ServiceList, 
 
   map(serviceList: ServiceList): Service[] {
     return serviceList.services;
-  }
-
-  isInPendingState(resource: Service): boolean {
-    return !this.isInSuccessState(resource);
   }
 
   /**
@@ -90,7 +87,7 @@ export class ServiceListComponent extends ResourceListWithStatuses<ServiceList, 
   }
 
   getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'labels', 'clusterip', 'internalendp', 'externalendp', 'created'];
+    return ['statusicon', 'name', 'labels', 'type', 'clusterip', 'internalendp', 'externalendp', 'created'];
   }
 
   private shouldShowNamespaceColumn_(): boolean {

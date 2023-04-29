@@ -18,6 +18,12 @@ import (
 	"context"
 	"log"
 
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	k8sClient "k8s.io/client-go/kubernetes"
+
 	"github.com/kubernetes/dashboard/src/app/backend/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
 	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
@@ -25,11 +31,6 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/event"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/pod"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
-	k8sClient "k8s.io/client-go/kubernetes"
 )
 
 // NodeAllocatedResources describes node allocated resources.
@@ -197,13 +198,13 @@ func getNodeAllocatedResources(node v1.Node, podList *v1.PodList) (NodeAllocated
 		limits[v1.ResourceCPU], reqs[v1.ResourceMemory], limits[v1.ResourceMemory]
 
 	var cpuRequestsFraction, cpuLimitsFraction float64 = 0, 0
-	if capacity := float64(node.Status.Capacity.Cpu().MilliValue()); capacity > 0 {
+	if capacity := float64(node.Status.Allocatable.Cpu().MilliValue()); capacity > 0 {
 		cpuRequestsFraction = float64(cpuRequests.MilliValue()) / capacity * 100
 		cpuLimitsFraction = float64(cpuLimits.MilliValue()) / capacity * 100
 	}
 
 	var memoryRequestsFraction, memoryLimitsFraction float64 = 0, 0
-	if capacity := float64(node.Status.Capacity.Memory().MilliValue()); capacity > 0 {
+	if capacity := float64(node.Status.Allocatable.Memory().MilliValue()); capacity > 0 {
 		memoryRequestsFraction = float64(memoryRequests.MilliValue()) / capacity * 100
 		memoryLimitsFraction = float64(memoryLimits.MilliValue()) / capacity * 100
 	}
@@ -219,12 +220,12 @@ func getNodeAllocatedResources(node v1.Node, podList *v1.PodList) (NodeAllocated
 		CPURequestsFraction:    cpuRequestsFraction,
 		CPULimits:              cpuLimits.MilliValue(),
 		CPULimitsFraction:      cpuLimitsFraction,
-		CPUCapacity:            node.Status.Capacity.Cpu().MilliValue(),
+		CPUCapacity:            node.Status.Allocatable.Cpu().MilliValue(),
 		MemoryRequests:         memoryRequests.Value(),
 		MemoryRequestsFraction: memoryRequestsFraction,
 		MemoryLimits:           memoryLimits.Value(),
 		MemoryLimitsFraction:   memoryLimitsFraction,
-		MemoryCapacity:         node.Status.Capacity.Memory().Value(),
+		MemoryCapacity:         node.Status.Allocatable.Memory().Value(),
 		AllocatedPods:          len(podList.Items),
 		PodCapacity:            podCapacity,
 		PodFraction:            podFraction,
@@ -302,8 +303,9 @@ func GetNodePods(client k8sClient.Interface, metricClient metricapi.MetricClient
 	}
 
 	pods, err := getNodePods(client, *node)
-	if err != nil {
-		return &podList, err
+	podNonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return &podList, criticalError
 	}
 
 	events, err := event.GetPodsEvents(client, v1.NamespaceAll, pods.Items)
@@ -312,6 +314,7 @@ func GetNodePods(client k8sClient.Interface, metricClient metricapi.MetricClient
 		return &podList, criticalError
 	}
 
+	nonCriticalErrors = append(nonCriticalErrors, podNonCriticalErrors...)
 	podList = pod.ToPodList(pods.Items, events, nonCriticalErrors, dsQuery, metricClient)
 	return &podList, nil
 }

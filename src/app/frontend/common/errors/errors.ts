@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import {HttpErrorResponse} from '@angular/common/http';
-import {ErrStatus, K8sError as K8SApiError} from '@api/backendapi';
-import {KdError as KdApiError} from '@api/frontendapi';
+import {ErrStatus, K8sError as K8SApiError} from '@api/root.api';
+import {KdError as KdApiError} from '@api/root.shared';
 
 export enum ApiError {
   tokenExpired = 'MSG_TOKEN_EXPIRED_ERROR',
@@ -26,12 +26,16 @@ export enum ErrorStatus {
   forbidden = 'Forbidden',
   internal = 'Internal error',
   unknown = 'Unknown error',
+  badRequest = 'Bad Request',
+  notFound = 'Not Found',
 }
 
 export enum ErrorCode {
   unauthorized = 401,
   forbidden = 403,
   internal = 500,
+  badRequest = 400,
+  notFound = 404,
 }
 
 const localizedErrors: {[key: string]: string} = {
@@ -112,6 +116,9 @@ export function AsKdError(error: HttpErrorResponse): KdError {
       break;
     case ErrorCode.internal:
       status = ErrorStatus.internal;
+      break;
+    case ErrorCode.notFound:
+      status = ErrorStatus.notFound;
       break;
     default:
       status = ErrorStatus.unknown;

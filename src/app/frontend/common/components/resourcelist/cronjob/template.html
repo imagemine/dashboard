@@ -23,7 +23,7 @@ limitations under the License.
        fxLayout="row"
        i18n>Cron Jobs</div>
   <div description><span class="kd-muted-light"
-          i18n>Items:&nbsp;</span>{{totalItems}}</div>
+          i18n>Items:&nbsp;</span>{{ totalItems }}</div>
   <div actions>
     <kd-card-list-filter></kd-card-list-filter>
   </div>
@@ -42,8 +42,9 @@ limitations under the License.
       <ng-container matColumnDef="statusicon">
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
         <mat-cell *matCellDef="let cronJob">
-          <mat-icon [ngClass]="getStatus(cronJob).iconClass">
-            {{getStatus(cronJob).iconName}}
+          <mat-icon [ngClass]="getStatus(cronJob).iconClass"
+                    [matTooltip]="getStatus(cronJob).iconTooltip">
+            {{ getStatus(cronJob).iconName }}
           </mat-icon>
         </mat-cell>
       </ng-container>
@@ -51,12 +52,14 @@ limitations under the License.
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header
+                         class="col-stretch-xl"
                          disableClear="true"
                          i18n>Name</mat-header-cell>
-        <mat-cell *matCellDef="let cronJob">
+        <mat-cell *matCellDef="let cronJob"
+                  class="col-stretch-xl">
           <a [routerLink]="getDetailsHref(cronJob.objectMeta.name, cronJob.objectMeta.namespace)"
              queryParamsHandling="preserve">
-            {{cronJob.objectMeta.name}}
+            {{ cronJob.objectMeta.name }}
           </a>
         </mat-cell>
       </ng-container>
@@ -64,47 +67,71 @@ limitations under the License.
       <ng-container *ngIf="shouldShowColumn('namespace')"
                     matColumnDef="namespace">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-l col-min-90"
                          i18n>Namespace</mat-header-cell>
-        <mat-cell *matCellDef="let cronJob">{{cronJob.objectMeta.namespace}}</mat-cell>
+        <mat-cell *matCellDef="let cronJob"
+                  class="col-stretch-l col-min-90">{{ cronJob.objectMeta.namespace }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="images">
+        <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-xl"
+                         i18n>Images</mat-header-cell>
+        <mat-cell *matCellDef="let cronJob"
+                  class="col-stretch-xl">
+          <kd-chips [map]="cronJob.containerImages"></kd-chips>
+        </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="labels">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-s"
                          i18n>Labels</mat-header-cell>
-        <mat-cell *matCellDef="let cronJob">
+        <mat-cell *matCellDef="let cronJob"
+                  class="col-stretch-s">
           <kd-chips [map]="cronJob.objectMeta.labels"></kd-chips>
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="schedule">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-m"
                          i18n>Schedule</mat-header-cell>
-        <mat-cell *matCellDef="let cronJob">
-          <span>{{cronJob.schedule}}</span>
+        <mat-cell *matCellDef="let cronJob"
+                  class="col-stretch-m">
+          <span>{{ cronJob.schedule }}</span>
           <span *ngIf="!cronJob.schedule">-</span>
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="suspend">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-m"
                          i18n>Suspend</mat-header-cell>
-        <mat-cell *matCellDef="let cronJob">{{!!cronJob.suspend}}</mat-cell>
+        <mat-cell *matCellDef="let cronJob"
+                  class="col-stretch-m">{{ !!cronJob.suspend }}</mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="active">
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header
                          disableClear="true"
+                         class="col-stretch-m"
                          i18n>Active</mat-header-cell>
-        <mat-cell *matCellDef="let cronJob">{{cronJob.active}}</mat-cell>
+        <mat-cell *matCellDef="let cronJob"
+                  class="col-stretch-m">{{ cronJob.active }}</mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="lastschedule">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-l"
                          i18n>Last Schedule</mat-header-cell>
-        <mat-cell *matCellDef="let cronJob">
-          <kd-date [date]="cronJob.lastSchedule"
+        <mat-cell *matCellDef="let cronJob"
+                  class="col-stretch-l">
+          <kd-date *ngIf="cronJob.lastSchedule"
+                   [date]="cronJob.lastSchedule"
                    relative></kd-date>
+          <ng-container *ngIf="!cronJob.lastSchedule">-</ng-container>
         </mat-cell>
       </ng-container>
 
@@ -121,21 +148,25 @@ limitations under the License.
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header
                          disableClear="true"
+                         class="col-stretch-l"
                          i18n>Created</mat-header-cell>
-        <mat-cell *matCellDef="let cronJob">
+        <mat-cell *matCellDef="let cronJob"
+                  class="col-stretch-l">
           <kd-date [date]="cronJob.objectMeta.creationTimestamp"
                    relative></kd-date>
         </mat-cell>
       </ng-container>
 
       <mat-header-row *matHeaderRowDef="getColumns()"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: getColumns();"></mat-row>
+      <mat-row *matRowDef="let row; columns: getColumns()"></mat-row>
     </mat-table>
 
-    <mat-paginator [length]="totalItems"
-                   [pageSize]="itemsPerPage"
-                   [hidePageSize]="true"
-                   [showFirstLastButtons]="true"></mat-paginator>
+    <div [hidden]="totalItems <= itemsPerPage">
+      <mat-paginator [length]="totalItems"
+                     [pageSize]="itemsPerPage"
+                     hidePageSize
+                     showFirstLastButtons></mat-paginator>
+    </div>
   </div>
 
   <div content

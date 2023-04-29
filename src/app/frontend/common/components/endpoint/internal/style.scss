@@ -12,15 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@import '../../../../variables';
+@use '../../../../variables' as *;
 
 .kd-internal-endpoint {
-  padding: (.25 * $baseline-grid) 0;
+  padding: (0.25 * $baseline-grid) 0;
 }
-
-.kd-middleellipsis2 {
-  display: inline-block;
-  max-width: 100%;
-  vertical-align: bottom;
-}
-

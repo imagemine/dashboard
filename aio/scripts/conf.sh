@@ -23,17 +23,9 @@ FRONTEND_DIR="${TMP_DIR}/frontend"
 FRONTEND_SRC="${SRC_DIR}/app/frontend"
 DIST_DIR="${ROOT_DIR}/dist"
 CACHE_DIR="${ROOT_DIR}/.cached_tools"
-BACKEND_SRC_DIR="${ROOT_DIR}/src/app/backend"
-COVERAGE_DIR="${ROOT_DIR}/coverage"
-
-# Paths.
-GO_COVERAGE_FILE="${ROOT_DIR}/coverage/coverage.go.txt"
 
 # Binaries.
 NG_BIN="${ROOT_DIR}/node_modules/.bin/ng"
-GULP_BIN="${ROOT_DIR}/node_modules/.bin/gulp"
-SCSSFMT_BIN="${ROOT_DIR}/node_modules/.bin/scssfmt"
-BEAUTIFY_BIN="${ROOT_DIR}/node_modules/.bin/js-beautify"
 
 # Global constants.
 ARCH=$(uname | awk '{print tolower($0)}')
@@ -41,19 +33,23 @@ ARCH=$(uname | awk '{print tolower($0)}')
 # Local cluster configuration (check start-cluster.sh script for more details).
 HEAPSTER_VERSION="v1.5.4"
 HEAPSTER_PORT=8082
-KIND_VERSION="v0.5.1"
+KIND_VERSION="v0.14.0"
+K8S_VERSION="v1.24.3"
 KIND_BIN=${CACHE_DIR}/kind-${KIND_VERSION}
-CODEGEN_VERSION="v0.18.4"
+CODEGEN_VERSION="v0.25.0"
 CODEGEN_BIN=${GOPATH}/pkg/mod/k8s.io/code-generator@${CODEGEN_VERSION}/generate-groups.sh
 
 # Setup logger.
-ERROR_STYLE=`tput setaf 1`
-INFO_STYLE=`tput setaf 2`
-BOLD_STYLE=`tput bold`
-RESET_STYLE=`tput sgr0`
+if test -t 1; then
+  COLORS=`tput colors`
+  if test -n "$COLORS" && test $COLORS -ge 8; then
+    DEFAULT_STYLE=`tput sgr0`
+    RED_STYLE=`tput setaf 1`
+  fi
+fi
 
-function say { echo -e "${INFO_STYLE}${BOLD_STYLE}$@${RESET_STYLE}"; }
-function saye { echo -e "${ERROR_STYLE}${BOLD_STYLE}$@${RESET_STYLE}"; }
+function say { echo "$@"; }
+function saye { echo -e "${RED_STYLE}$@${DEFAULT_STYLE}"; }
 
 function ensure-cache {
   say "\nMaking sure that ${CACHE_DIR} directory exists"
@@ -79,5 +75,5 @@ function ensure-kubeconfig {
   # so we can not `mv` or `rm` it.
   cp ${HOME}/.kube/config ${HOME}/.kube/config-unkind
 
-  cat $(${KIND_BIN} get kubeconfig-path --name="k8s-cluster-ci") > $HOME/.kube/config
+  ${KIND_BIN} get kubeconfig --name="k8s-cluster-ci" > ${HOME}/.kube/config
 }

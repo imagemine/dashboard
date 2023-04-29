@@ -14,15 +14,16 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {DaemonSet, DaemonSetList, Event, Metric} from '@api/backendapi';
-import {Observable} from 'rxjs/Observable';
+import {DaemonSet, DaemonSetList, Event, Metric} from '@api/root.api';
+import {Observable} from 'rxjs';
 
-import {ResourceListWithStatuses} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {NamespacedResourceService} from '../../../services/resource/resource';
+import {ResourceListWithStatuses} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+import {Status} from '../statuses';
 
 @Component({
   selector: 'kd-daemon-set-list',
@@ -37,16 +38,16 @@ export class DaemonSetListComponent extends ResourceListWithStatuses<DaemonSetLi
   constructor(
     private readonly daemonSet_: NamespacedResourceService<DaemonSetList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('daemonset', notifications, cdr);
     this.id = ListIdentifier.daemonSet;
     this.groupId = ListGroupIdentifier.workloads;
 
     // Register status icon handlers
-    this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState);
-    this.registerBinding(this.icon.timelapse, 'kd-muted', this.isInPendingState);
-    this.registerBinding(this.icon.error, 'kd-error', this.isInErrorState);
+    this.registerBinding('kd-success', r => r.podInfo.warnings.length === 0 && r.podInfo.pending === 0, Status.Running);
+    this.registerBinding('kd-warning', r => r.podInfo.warnings.length === 0 && r.podInfo.pending > 0, Status.Pending);
+    this.registerBinding('kd-error', r => r.podInfo.warnings.length > 0, Status.Error);
 
     // Register action columns.
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);
@@ -64,18 +65,6 @@ export class DaemonSetListComponent extends ResourceListWithStatuses<DaemonSetLi
     return daemonSetList.daemonSets;
   }
 
-  isInErrorState(resource: DaemonSet): boolean {
-    return resource.podInfo.warnings.length > 0;
-  }
-
-  isInPendingState(resource: DaemonSet): boolean {
-    return resource.podInfo.warnings.length === 0 && resource.podInfo.pending > 0;
-  }
-
-  isInSuccessState(resource: DaemonSet): boolean {
-    return resource.podInfo.warnings.length === 0 && resource.podInfo.pending === 0;
-  }
-
   hasErrors(daemonSet: DaemonSet): boolean {
     return daemonSet.podInfo.warnings.length > 0;
   }
@@ -85,7 +74,7 @@ export class DaemonSetListComponent extends ResourceListWithStatuses<DaemonSetLi
   }
 
   getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'labels', 'pods', 'created', 'images'];
+    return ['statusicon', 'name', 'images', 'labels', 'pods', 'created'];
   }
 
   private shouldShowNamespaceColumn_(): boolean {

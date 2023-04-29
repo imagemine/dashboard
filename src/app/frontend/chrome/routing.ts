@@ -14,11 +14,11 @@
 
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {AuthGuard} from '../common/services/guard/auth';
+import {AuthGuard} from '@common/services/guard/auth';
 import {ChromeComponent} from './component';
 
 const routes: Routes = [
-  {path: '', redirectTo: '/overview', pathMatch: 'full'},
+  {path: '', redirectTo: '/workloads', pathMatch: 'full'},
   {
     path: '',
     component: ChromeComponent,
@@ -35,12 +35,24 @@ const routes: Routes = [
         loadChildren: () => import('resource/cluster/module').then(m => m.ClusterModule),
       },
       {
+        path: 'clusterrolebinding',
+        loadChildren: () => import('resource/cluster/clusterrolebinding/module').then(m => m.ClusterRoleBindingModule),
+      },
+      {
         path: 'clusterrole',
         loadChildren: () => import('resource/cluster/clusterrole/module').then(m => m.ClusterRoleModule),
       },
       {
+        path: 'event',
+        loadChildren: () => import('resource/cluster/event/module').then(m => m.EventModule),
+      },
+      {
         path: 'namespace',
         loadChildren: () => import('resource/cluster/namespace/module').then(m => m.NamespaceModule),
+      },
+      {
+        path: 'networkpolicy',
+        loadChildren: () => import('resource/cluster/networkpolicy/module').then(m => m.NetworkPolicyModule),
       },
       {
         path: 'node',
@@ -51,8 +63,16 @@ const routes: Routes = [
         loadChildren: () => import('resource/cluster/persistentvolume/module').then(m => m.PersistentVolumeModule),
       },
       {
-        path: 'storageclass',
-        loadChildren: () => import('resource/cluster/storageclass/module').then(m => m.StorageClassModule),
+        path: 'serviceaccount',
+        loadChildren: () => import('resource/cluster/serviceaccount/module').then(m => m.ServiceAccountModule),
+      },
+      {
+        path: 'role',
+        loadChildren: () => import('resource/cluster/role/module').then(m => m.RoleModule),
+      },
+      {
+        path: 'rolebinding',
+        loadChildren: () => import('resource/cluster/rolebinding/module').then(m => m.RoleBingingModule),
       },
 
       // Overview
@@ -110,6 +130,10 @@ const routes: Routes = [
         loadChildren: () => import('resource/discovery/ingress/module').then(m => m.IngressModule),
       },
       {
+        path: 'ingressclass',
+        loadChildren: () => import('resource/discovery/ingressclass/module').then(m => m.IngressClassModule),
+      },
+      {
         path: 'service',
         loadChildren: () => import('resource/discovery/service/module').then(m => m.ServiceModule),
       },
@@ -137,8 +161,8 @@ const routes: Routes = [
         loadChildren: () => import('resource/config/secret/module').then(m => m.SecretModule),
       },
       {
-        path: 'serviceaccount',
-        loadChildren: () => import('resource/cluster/serviceaccount/module').then(m => m.ServiceAccountModule),
+        path: 'storageclass',
+        loadChildren: () => import('resource/config/storageclass/module').then(m => m.StorageClassModule),
       },
 
       // Custom resource definitions

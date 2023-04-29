@@ -13,14 +13,15 @@
 // limitations under the License.
 
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {AppConfig} from '@api/backendapi';
-import {SharedModule} from 'shared.module';
-import {CardComponent} from '../common/components/card/component';
-import {AssetsService} from '../common/services/global/assets';
-import {ConfigService} from '../common/services/global/config';
+import {AppConfig} from '@api/root.api';
+import {CardComponent} from '@common/components/card/component';
+import {AssetsService} from '@common/services/global/assets';
+import {ConfigService} from '@common/services/global/config';
+import {MESSAGES, MESSAGES_DI_TOKEN} from '../index.messages';
+import {SharedModule} from '../shared.module';
 import {AboutComponent} from './component';
 
 describe('AboutComponent', () => {
@@ -33,17 +34,17 @@ describe('AboutComponent', () => {
   // set the predefined values
   const copyrightYear = 2019;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule, HttpClientTestingModule, BrowserAnimationsModule],
       declarations: [AboutComponent, CardComponent],
-      providers: [AssetsService, ConfigService],
+      providers: [AssetsService, ConfigService, {provide: MESSAGES_DI_TOKEN, useValue: MESSAGES}],
     }).compileComponents();
-    httpMock = TestBed.get(HttpTestingController);
-    configService = TestBed.get(ConfigService);
+    httpMock = TestBed.inject(HttpTestingController);
+    configService = TestBed.inject(ConfigService);
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     // prepare the component
     configService.init();
     fixture = TestBed.createComponent(AboutComponent);
@@ -60,7 +61,7 @@ describe('AboutComponent', () => {
     element = fixture.debugElement.query(By.css('kd-card')).nativeElement;
   }));
 
-  it('should print current year', async(() => {
+  it('should print current year', waitForAsync(() => {
     fixture.detectChanges();
     expect(element.textContent).toContain(`2015 - ${copyrightYear}`);
   }));

@@ -3,14 +3,14 @@
   "compilerOptions": {
     "outDir": "../out-tsc/app",
     "baseUrl": "../src/app/frontend",
-    "target": "es5",
     "types": ["node"]
   },
   "include": [
-    "../src/app/frontend/**/*"
+    "../src/app/frontend/**/*.ts"
   ],
   "exclude": [
-    "../src/app/frontend/**/*.spec.ts"
+    "../src/app/frontend/**/*.spec.ts",
+    "../src/app/frontend/test.*.ts"
   ],
-  "lib": ["es2017", "dom"]
+  "lib": ["ES2020", "dom"]
 }

@@ -14,12 +14,12 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {Plugin, PluginList} from '@api/backendapi';
-import {Observable} from 'rxjs/Observable';
-import {ResourceListBase} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {NamespacedResourceService} from '../../../services/resource/resource';
+import {Plugin, PluginList} from '@api/root.api';
+import {Observable} from 'rxjs';
+import {ResourceListBase} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
@@ -34,7 +34,7 @@ export class PluginListComponent extends ResourceListBase<PluginList, Plugin> {
   constructor(
     private readonly plugin_: NamespacedResourceService<PluginList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('plugin', notifications, cdr);
     this.id = ListIdentifier.plugin;

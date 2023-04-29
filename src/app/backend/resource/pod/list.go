@@ -55,10 +55,10 @@ type Pod struct {
 	ObjectMeta api.ObjectMeta `json:"objectMeta"`
 	TypeMeta   api.TypeMeta   `json:"typeMeta"`
 
-	// More info on pod status
-	PodStatus PodStatus `json:"podStatus"`
+	// Status determined based on the same logic as kubectl.
+	Status string `json:"status"`
 
-	// Count of containers restarts.
+	// RestartCount of containers restarts.
 	RestartCount int32 `json:"restartCount"`
 
 	// Pod metrics.
@@ -67,8 +67,11 @@ type Pod struct {
 	// Pod warning events
 	Warnings []common.Event `json:"warnings"`
 
-	// Name of the Node this Pod runs on.
+	// NodeName of the Node this Pod runs on.
 	NodeName string `json:"nodeName"`
+
+	// ContainerImages holds a list of the Pod images.
+	ContainerImages []string `json:"containerImages"`
 }
 
 var EmptyPodList = &PodList{
@@ -151,12 +154,13 @@ func ToPodList(pods []v1.Pod, events []v1.Event, nonCriticalErrors []error, dsQu
 
 func toPod(pod *v1.Pod, metrics *MetricsByPod, warnings []common.Event) Pod {
 	podDetail := Pod{
-		ObjectMeta:   api.NewObjectMeta(pod.ObjectMeta),
-		TypeMeta:     api.NewTypeMeta(api.ResourceKindPod),
-		Warnings:     warnings,
-		PodStatus:    getPodStatus(*pod, warnings),
-		RestartCount: getRestartCount(*pod),
-		NodeName:     pod.Spec.NodeName,
+		ObjectMeta:      api.NewObjectMeta(pod.ObjectMeta),
+		TypeMeta:        api.NewTypeMeta(api.ResourceKindPod),
+		Warnings:        warnings,
+		Status:          getPodStatus(*pod),
+		RestartCount:    getRestartCount(*pod),
+		NodeName:        pod.Spec.NodeName,
+		ContainerImages: common.GetContainerImages(&pod.Spec),
 	}
 
 	if m, exists := metrics.MetricsMap[pod.UID]; exists {

@@ -14,15 +14,16 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {Event, ReplicationController, ReplicationControllerList} from '@api/backendapi';
-import {Observable} from 'rxjs/Observable';
+import {Event, ReplicationController, ReplicationControllerList} from '@api/root.api';
+import {Observable} from 'rxjs';
 
-import {ResourceListWithStatuses} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {NamespacedResourceService} from '../../../services/resource/resource';
+import {ResourceListWithStatuses} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+import {Status} from '../statuses';
 
 @Component({
   selector: 'kd-replication-controller-list',
@@ -38,16 +39,16 @@ export class ReplicationControllerListComponent extends ResourceListWithStatuses
   constructor(
     private readonly replicationController_: NamespacedResourceService<ReplicationControllerList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('replicationcontroller', notifications, cdr);
     this.id = ListIdentifier.replicationController;
     this.groupId = ListGroupIdentifier.workloads;
 
     // Register status icon handlers
-    this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState);
-    this.registerBinding(this.icon.timelapse, 'kd-muted', this.isInPendingState);
-    this.registerBinding(this.icon.error, 'kd-error', this.isInErrorState);
+    this.registerBinding('kd-success', r => r.podInfo.warnings.length === 0 && r.podInfo.pending === 0, Status.Running);
+    this.registerBinding('kd-warning', r => r.podInfo.warnings.length === 0 && r.podInfo.pending > 0, Status.Pending);
+    this.registerBinding('kd-error', r => r.podInfo.warnings.length > 0, Status.Error);
 
     // Register action columns.
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);
@@ -64,20 +65,8 @@ export class ReplicationControllerListComponent extends ResourceListWithStatuses
     return rcList.replicationControllers;
   }
 
-  isInErrorState(resource: ReplicationController): boolean {
-    return resource.podInfo.warnings.length > 0;
-  }
-
-  isInPendingState(resource: ReplicationController): boolean {
-    return resource.podInfo.warnings.length === 0 && resource.podInfo.pending > 0;
-  }
-
-  isInSuccessState(resource: ReplicationController): boolean {
-    return resource.podInfo.warnings.length === 0 && resource.podInfo.pending === 0;
-  }
-
   protected getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'labels', 'pods', 'created', 'images'];
+    return ['statusicon', 'name', 'images', 'labels', 'pods', 'created'];
   }
 
   private shouldShowNamespaceColumn_(): boolean {

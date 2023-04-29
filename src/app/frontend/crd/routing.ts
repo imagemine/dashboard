@@ -14,12 +14,13 @@
 
 import {NgModule} from '@angular/core';
 import {Route, RouterModule} from '@angular/router';
+import {BREADCRUMBS} from '../index.messages';
 
 import {CRDDetailComponent} from './detail/component';
 import {CRDListComponent} from './list/component';
-import {DEFAULT_ACTIONBAR, PIN_DEFAULT_ACTIONBAR} from '../common/components/actionbars/routing';
+import {DEFAULT_ACTIONBAR, PIN_DEFAULT_ACTIONBAR} from '@common/components/actionbars/routing';
 import {CRDObjectDetailComponent} from './crdobject/component';
-import {SCALE_DEFAULT_ACTIONBAR} from '../common/components/actionbars/routing';
+import {SCALE_DEFAULT_ACTIONBAR} from '@common/components/actionbars/routing';
 
 const CRD_LIST_ROUTE: Route = {
   path: '',
@@ -27,7 +28,7 @@ const CRD_LIST_ROUTE: Route = {
     {
       path: '',
       component: CRDListComponent,
-      data: {breadcrumb: 'Custom Resource Definitions'},
+      data: {breadcrumb: BREADCRUMBS.CustomResourceDefinitions},
     },
     DEFAULT_ACTIONBAR,
   ],

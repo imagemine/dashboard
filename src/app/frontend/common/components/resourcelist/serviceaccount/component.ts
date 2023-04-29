@@ -14,13 +14,13 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {Observable} from 'rxjs/Observable';
-import {ServiceAccount, ServiceAccountList} from 'typings/backendapi';
+import {Observable} from 'rxjs';
+import {ServiceAccount, ServiceAccountList} from 'typings/root.api';
 
-import {ResourceListBase} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {NamespacedResourceService} from '../../../services/resource/resource';
+import {ResourceListBase} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
@@ -35,7 +35,7 @@ export class ServiceAccountListComponent extends ResourceListBase<ServiceAccount
   constructor(
     private readonly serviceAccount_: NamespacedResourceService<ServiceAccountList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('serviceaccount', notifications, cdr);
     this.id = ListIdentifier.serviceAccount;

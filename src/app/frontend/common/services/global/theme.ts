@@ -12,24 +12,75 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {EventEmitter, Injectable} from '@angular/core';
-import {ThemeSwitchCallback} from '@api/frontendapi';
+import {DOCUMENT} from '@angular/common';
+import {EventEmitter, Inject, Injectable} from '@angular/core';
+import {Theme} from '@api/root.api';
+import {ThemeSwitchCallback} from '@api/root.ui';
+import {LocalConfigLoaderService} from '@common/services/global/loader';
 
 @Injectable()
 export class ThemeService {
-  private isLightThemeEnabled_ = true;
-  private readonly onThemeSwitchEvent_ = new EventEmitter<boolean>();
+  static readonly SystemTheme = '__system_theme__';
+  private _customThemes: Theme[] = [];
+  private readonly _defaultThemes: Theme[] = [
+    {name: 'kd-light-theme', displayName: 'Light', isDark: false},
+    {name: 'kd-dark-theme', displayName: 'Dark', isDark: true},
+  ];
+  private readonly _onThemeSwitchEvent = new EventEmitter<string>();
+  private readonly _colorSchemeQuery = '(prefers-color-scheme: dark)';
 
-  isLightThemeEnabled(): boolean {
-    return this.isLightThemeEnabled_;
+  constructor(
+    @Inject(DOCUMENT) private readonly _document: Document,
+    private readonly _config: LocalConfigLoaderService
+  ) {}
+
+  private _theme = ThemeService.SystemTheme;
+
+  get theme(): string {
+    return this._theme;
   }
 
-  switchTheme(isLightTheme: boolean): void {
-    this.onThemeSwitchEvent_.emit(isLightTheme);
-    this.isLightThemeEnabled_ = isLightTheme;
+  set theme(theme: string) {
+    this._theme = theme;
+
+    if (theme === ThemeService.SystemTheme) {
+      theme = this._isSystemThemeDark() ? 'kd-dark-theme' : 'kd-light-theme';
+    }
+    this._onThemeSwitchEvent.emit(theme);
+  }
+
+  get themes(): Theme[] {
+    const defaultThemeNames = new Set(this._defaultThemes.map(theme => theme.name));
+    const filteredCustomThemes = this._customThemes.filter(theme => !defaultThemeNames.has(theme.name));
+    return [...this._defaultThemes, ...filteredCustomThemes];
+  }
+
+  init(): void {
+    this._document.defaultView.matchMedia(this._colorSchemeQuery).addEventListener('change', e => {
+      if (this.theme === ThemeService.SystemTheme) {
+        this._onThemeSwitchEvent.emit(e.matches ? 'kd-dark-theme' : 'kd-light-theme');
+      }
+    });
+
+    this._customThemes = this._config.appConfig.themes;
   }
 
   subscribe(callback: ThemeSwitchCallback): void {
-    this.onThemeSwitchEvent_.subscribe(callback);
+    this._onThemeSwitchEvent.subscribe(callback);
+  }
+
+  isThemeDark(): boolean {
+    if (this.theme === ThemeService.SystemTheme) {
+      return this._isSystemThemeDark();
+    }
+
+    const theme = this.themes.find(theme => theme.name === this.theme);
+    return theme ? theme.isDark : false;
+  }
+
+  private _isSystemThemeDark(): boolean {
+    return (
+      this._document.defaultView.matchMedia && this._document.defaultView.matchMedia(this._colorSchemeQuery).matches
+    );
   }
 }

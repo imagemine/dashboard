@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-
 <form [formGroup]="form"
       novalidate>
   <kd-help-section>
@@ -26,29 +25,28 @@ limitations under the License.
              [maxlength]="nameMaxLength"
              [namespace]="namespace.value"
              kdUniqueName
-             required>
+             required />
       <mat-progress-bar class="kd-deploy-form-progress"
                         [ngClass]="{'kd-deploy-form-progress-show': name.pending}"
                         mode="indeterminate">
       </mat-progress-bar>
-      <mat-hint align="end">{{name.value?.length}} / {{ nameMaxLength }}</mat-hint>
+      <mat-hint align="end">{{ name.value?.length }} / {{ nameMaxLength }}</mat-hint>
       <mat-error *ngIf="name.errors?.uniqueName"
                  i18n>
         Deployment or service with this name already exists within namespace.
       </mat-error>
       <mat-error *ngIf="name.errors?.required"
-                 i18n>
-        Application name is required.
-      </mat-error>
+                 i18n> Application name is required. </mat-error>
       <mat-error *ngIf="name.errors?.namePattern"
                  i18n>
-        Application name must start with a lowercase letter and contain only lowercase letters, numbers, and '-' between words.
+        Application name must start with a lowercase letter and contain only lowercase letters, numbers, and '-' between
+        words.
       </mat-error>
     </mat-form-field>
 
     <kd-user-help>
       <ng-container i18n>An 'app' label with this value will be added to the Deployment and Service that get deployed.</ng-container>
-      <a href="http://kubernetes.io/docs/user-guide/labels/"
+      <a href="https://kubernetes.io/docs/user-guide/labels/"
          target="_blank"
          tabindex="-1"
          i18n>
@@ -65,20 +63,19 @@ limitations under the License.
              placeholder="Container image"
              i18n-placeholder
              kdValidImageReference
-             required>
+             required />
       <mat-error *ngIf="containerImage.errors?.required"
-                 i18n>
-        Container image is required
-      </mat-error>
+                 i18n> Container image is required </mat-error>
       <mat-error *ngIf="containerImage.errors?.validImageReference"
                  i18n>
-        Container image is invalid: {{containerImage.errors?.validImageReference}}
+        Container image is invalid: {{ containerImage.errors?.validImageReference }}
       </mat-error>
     </mat-form-field>
 
     <kd-user-help>
-      <ng-container i18n>Enter the URL of a public image on any registry, or a private image hosted on Docker Hub or Google Container Registry.</ng-container>
-      <a href="http://kubernetes.io/docs/user-guide/images/"
+      <ng-container i18n>Enter the URL of a public image on any registry, or a private image hosted on Docker Hub or Google Container
+        Registry.</ng-container>
+      <a href="https://kubernetes.io/docs/user-guide/images/"
          target="_blank"
          tabindex="-1"
          i18n>
@@ -97,15 +94,11 @@ limitations under the License.
              i18n-placeholder
              min="1"
              kdWarnThreshold="100"
-             required>
+             required />
       <mat-error *ngIf="replicas.errors?.required"
-                 i18n>
-        Number of pods is required
-      </mat-error>
+                 i18n> Number of pods is required </mat-error>
       <mat-error *ngIf="replicas.errors?.kdValidInteger"
-                 i18n>
-        Number of pods must be a positive integer
-      </mat-error>
+                 i18n> Number of pods must be a positive integer </mat-error>
       <!-- <mat-error when="min">[[Number of pods must be at least 1|Number of pods must be at least 1 warning on deploy from settings page.]]</mat-error> -->
       <mat-error *ngIf="replicas.errors?.warnThreshold"
                  i18n>
@@ -133,8 +126,34 @@ limitations under the License.
       </kd-port-mappings>
     </div>
     <kd-user-help>
-      <ng-container i18n>Optionally, an internal or external Service can be defined to map an incoming Port to a target Port seen by the container.</ng-container>
-      <a href="http://kubernetes.io/docs/user-guide/services/"
+      <ng-container i18n>Optionally, an internal or external Service can be defined to map an incoming Port to a target Port seen by the
+        container.</ng-container>
+      <a href="https://kubernetes.io/docs/user-guide/services/"
+         target="_blank"
+         tabindex="-1"
+         i18n>
+        Learn more
+        <i class="material-icons">open_in_new</i>
+      </a>
+    </kd-user-help>
+  </kd-help-section>
+
+  <kd-help-section>
+    <mat-form-field>
+      <mat-select formControlName="namespace"
+                  (click)="resetImagePullSecret()"
+                  placeholder="Namespace"
+                  i18n-placeholder
+                  required>
+        <mat-option *ngFor="let namespace of namespaces"
+                    [value]="namespace"> {{ namespace }} </mat-option>
+        <mat-option (click)="handleNamespaceDialog()"
+                    i18n> Create a new namespace... </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <kd-user-help>
+      <ng-container i18n>Namespaces let you partition resources into logically named groups.</ng-container>
+      <a href="https://kubernetes.io/docs/admin/namespaces/"
          target="_blank"
          tabindex="-1"
          i18n>
@@ -166,37 +185,9 @@ limitations under the License.
                          formControlName="labels"></kd-deploy-label>
       </div>
       <kd-user-help>
-        <ng-container i18n>The specified labels will be applied to the created Deployment, Service (if any) and Pods. Common labels include release, environment, tier, partition and track.</ng-container>
-        <a href="http://kubernetes.io/docs/user-guide/labels/"
-           target="_blank"
-           tabindex="-1"
-           i18n>
-          Learn more
-          <i class="material-icons">open_in_new</i>
-        </a>
-      </kd-user-help>
-    </kd-help-section>
-
-    <kd-help-section>
-      <mat-form-field>
-        <mat-select formControlName="namespace"
-                    (click)="resetImagePullSecret()"
-                    placeholder="Namespace"
-                    i18n-placeholder
-                    required>
-          <mat-option *ngFor="let namespace of namespaces"
-                      [value]="namespace">
-            {{namespace}}
-          </mat-option>
-          <mat-option (click)="handleNamespaceDialog()"
-                      i18n>
-            Create a new namespace...
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-      <kd-user-help>
-        <ng-container i18n>Namespaces let you partition resources into logically named groups.</ng-container>
-        <a href="http://kubernetes.io/docs/admin/namespaces/"
+        <ng-container i18n>The specified labels will be applied to the created Deployment, Service (if any) and Pods. Common labels
+          include release, environment, tier, partition and track.</ng-container>
+        <a href="https://kubernetes.io/docs/user-guide/labels/"
            target="_blank"
            tabindex="-1"
            i18n>
@@ -213,18 +204,15 @@ limitations under the License.
                     placeholder="Image Pull Secret"
                     i18n-placeholder>
           <mat-option *ngFor="let secret of secrets"
-                      [value]="secret">
-            {{secret}}
-          </mat-option>
+                      [value]="secret"> {{ secret }} </mat-option>
           <mat-option (click)="handleCreateSecretDialog()"
-                      i18n>
-            Create a new secret...
-          </mat-option>
+                      i18n> Create a new secret... </mat-option>
         </mat-select>
       </mat-form-field>
       <kd-user-help>
-        <ng-container i18n>The specified image could require a pull secret credential if it is private. You may choose an existing secret or create a new one.</ng-container>
-        <a href="http://kubernetes.io/docs/user-guide/secrets/"
+        <ng-container i18n>The specified image could require a pull secret credential if it is private. You may choose an existing
+          secret or create a new one.</ng-container>
+        <a href="https://kubernetes.io/docs/user-guide/secrets/"
            target="_blank"
            tabindex="-1"
            i18n>
@@ -243,7 +231,7 @@ limitations under the License.
                  i18n-placeholder
                  name="cpuRequirement"
                  min="0"
-                 formControlName="cpuRequirement">
+                 formControlName="cpuRequirement" />
           <mat-error *ngIf="cpuRequirement.errors?.min"
                      i18n>
             CPU requirement must be given as a positive number.
@@ -261,7 +249,7 @@ limitations under the License.
                  i18n-placeholder
                  name="memoryRequirement"
                  min="0"
-                 formControlName="memoryRequirement">
+                 formControlName="memoryRequirement" />
           <mat-error *ngIf="memoryRequirement.errors?.min"
                      i18n>
             Memory requirement must be given as a positive number.
@@ -274,7 +262,7 @@ limitations under the License.
       </div>
       <kd-user-help>
         <ng-container i18n>You can specify minimum CPU and memory requirements for the container.</ng-container>
-        <a href="http://kubernetes.io/docs/admin/limitrange/"
+        <a href="https://kubernetes.io/docs/admin/limitrange/"
            target="_blank"
            tabindex="-1"
            i18n>
@@ -290,18 +278,19 @@ limitations under the License.
           <input matInput
                  placeholder="Run command"
                  i18n-placeholder
-                 formControlName="containerCommand">
+                 formControlName="containerCommand" />
         </mat-form-field>
         <mat-form-field class="kd-block">
           <input matInput
                  placeholder="Run command arguments"
                  i18n-placeholder
-                 formControlName="containerCommandArgs">
+                 formControlName="containerCommandArgs" />
         </mat-form-field>
       </div>
       <kd-user-help>
-        <ng-container i18n>By default, your containers run the selected image's default entrypoint command. You can use the command options to override the default.</ng-container>
-        <a href="http://kubernetes.io/docs/user-guide/containers/"
+        <ng-container i18n>By default, your containers run the selected image's default entrypoint command. You can use the command
+          options to override the default.</ng-container>
+        <a href="https://kubernetes.io/docs/user-guide/containers/"
            target="_blank"
            tabindex="-1"
            i18n>
@@ -319,7 +308,7 @@ limitations under the License.
       </div>
       <kd-user-help>
         <ng-container i18n>Processes in privileged containers are equivalent to processes running as root on the host.</ng-container>
-        <a href="http://kubernetes.io/docs/user-guide/pods/#privileged-mode-for-pod-containers"
+        <a href="https://kubernetes.io/docs/concepts/workloads/pods/#privileged-mode-for-containers"
            target="_blank"
            tabindex="-1"
            i18n>
@@ -332,7 +321,8 @@ limitations under the License.
     <kd-help-section>
       <kd-environment-variables formControlName="variables"></kd-environment-variables>
       <kd-user-help>
-        <ng-container i18n>Environment variables available for use in the container. Values can reference other variables using $(VAR_NAME) syntax.</ng-container>
+        <ng-container i18n>Environment variables available for use in the container. Values can reference other variables using
+          $(VAR_NAME) syntax.</ng-container>
         <a href="https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/"
            target="_blank"
            tabindex="-1"
@@ -343,7 +333,6 @@ limitations under the License.
       </kd-user-help>
     </kd-help-section>
   </div>
-
 </form>
 
 <button type="button"
@@ -356,17 +345,24 @@ limitations under the License.
 </button>
 
 <button type="button"
+        [disabled]="isCreateDisabled()"
+        color="primary"
+        (click)="preview()"
+        mat-button
+        i18n>
+  Preview
+</button>
+
+<button type="button"
         (click)="cancel()"
         color="primary"
         mat-button
-        i18n>
-  Cancel
-</button>
+        i18n>Cancel</button>
 
 <button mat-button
         color="primary"
         (click)="switchMoreOptions()"
         [hidden]="!isMoreOptionsEnabled()"
         i18n>
-  {isMoreOptionsEnabled(), select, 1 {Hide advanced options} other {Show advanced options}}
+  {isMoreOptionsEnabled(), select, true {Hide advanced options} other {Show advanced options}}
 </button>

@@ -14,17 +14,16 @@
 
 # This is a Dockerfile for running and building Kubernetes dashboard
 # It installs all deps in the container and adds the dashboard source
-# This way it abstracts all required build tools away and lets the user
-# run gulp tasks on the code with only docker installed
+# This way it abstracts all required build tools away
 
 # golang is based on debian:jessie
 # Specify version to clarify which version we use.
-FROM golang:1.13-buster
+FROM golang:1.19.0-bullseye
 
 # Install Node.js. Go is already installed.
 # A small tweak, apt-get update is already run by the nodejs setup script,
 # so there's no need to run it again.
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - \
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
 	&& apt-get install -y --no-install-recommends \
 	nodejs \
 	patch \
@@ -67,7 +66,7 @@ ENV NG_CLI_ANALYTICS=false
 
 # Download a statically linked docker client,
 # so the container is able to build images on the host.
-RUN curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-18.06.1-ce.tgz > /tmp/docker.tgz && \
+RUN curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-20.10.17.tgz > /tmp/docker.tgz && \
 	cd /tmp/ && \
 	tar xzvf docker.tgz && \
 	rm docker.tgz && \
@@ -84,16 +83,23 @@ RUN mv ./kubectl /usr/local/bin/kubectl
 # `npm ci` installs golangci, but this installation is needed
 # for running `npm run check` singlely, like
 # `aio/develop/run-npm-on-container.sh run check`.
-RUN curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.22.2
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.48.0
+
+# Enable go mod.
+ENV GO111MODULE=on
 
 # Install delve for debuging go files.
-RUN go get github.com/go-delve/delve/cmd/dlv
-
-# Enable go mod. Note(shu-mutou): do not set this before `go get`
-ENV GO111MODULE=on
+RUN go install github.com/go-delve/delve/cmd/dlv@v1.7.1
 
 # Set GOPROXY to ensure download modules
 ENV GOPROXY=https://proxy.golang.org
+
+# Set NODE_OPTIONS to increase NodeJS heap size
+ENV NODE_OPTIONS=--max-old-space-size=8192
+
+# To install go modules by user, add write access to $GOPATH (default: 755)
+# `chmod +w` does not work, so set 777.
+RUN chmod 777 -R /go
 
 # Volume for source code
 VOLUME ["/go/src/github.com/kubernetes/dashboard"]

@@ -16,11 +16,11 @@ import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Inject, Injectable} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {Router} from '@angular/router';
-import {AppDeploymentContentResponse, AppDeploymentContentSpec, AppDeploymentSpec} from '@api/backendapi';
-
-import {Config, CONFIG_DI_TOKEN} from '../../../index.config';
+import {AppDeploymentContentResponse, AppDeploymentContentSpec, AppDeploymentSpec} from '@api/root.api';
+import {IConfig} from '@api/root.ui';
+import {AsKdError} from '@common/errors/errors';
+import {CONFIG_DI_TOKEN} from '../../../index.config';
 import {AlertDialog, AlertDialogConfig} from '../../dialogs/alert/dialog';
-import {NAMESPACE_STATE_PARAM} from '../../params/params';
 import {CsrfTokenService} from '../global/csrftoken';
 import {NamespaceService} from '../global/namespace';
 
@@ -54,7 +54,7 @@ export class CreateService {
     private readonly csrfToken_: CsrfTokenService,
     private readonly matDialog_: MatDialog,
     private readonly router_: Router,
-    @Inject(CONFIG_DI_TOKEN) private readonly CONFIG: Config,
+    @Inject(CONFIG_DI_TOKEN) private readonly CONFIG: IConfig
   ) {}
 
   async createContent(content: string, validate = true, name = ''): Promise<AppDeploymentContentResponse> {
@@ -77,7 +77,7 @@ export class CreateService {
         })
         .toPromise();
       if (response.error.length > 0) {
-        this.reportError(i18n.MSG_DEPLOY_DIALOG_PARTIAL_COMPLETED, response.error);
+        this.reportError_(i18n.MSG_DEPLOY_DIALOG_PARTIAL_COMPLETED, response.error);
       }
     } catch (err) {
       error = err;
@@ -85,12 +85,8 @@ export class CreateService {
     this.isDeployInProgress_ = false;
 
     if (error) {
-      this.reportError(i18n.MSG_DEPLOY_DIALOG_ERROR, error.error);
+      this.reportError_(i18n.MSG_DEPLOY_DIALOG_ERROR, AsKdError(error).message);
       throw error;
-    } else {
-      this.router_.navigate(['overview'], {
-        queryParams: {[NAMESPACE_STATE_PARAM]: this.namespace_.current()},
-      });
     }
 
     return response;
@@ -114,12 +110,8 @@ export class CreateService {
     this.isDeployInProgress_ = false;
 
     if (error) {
-      this.reportError(i18n.MSG_DEPLOY_DIALOG_ERROR, error.error);
+      this.reportError_(i18n.MSG_DEPLOY_DIALOG_ERROR, AsKdError(error).message);
       throw error;
-    } else {
-      this.router_.navigate(['overview'], {
-        queryParams: {[NAMESPACE_STATE_PARAM]: spec.namespace},
-      });
     }
 
     return response;
@@ -129,7 +121,7 @@ export class CreateService {
     return this.isDeployInProgress_;
   }
 
-  private reportError(title: string, message: string): void {
+  private reportError_(title: string, message: string): void {
     const configData: AlertDialogConfig = {
       title,
       message,

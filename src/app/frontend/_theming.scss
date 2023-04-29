@@ -12,31 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@import '~@angular/material/theming';
-@import 'variables';
+@use 'sass:map';
+@use 'sass:color';
+@use '~@angular/material/theming';
+@use 'variables' as *;
 
 @mixin kd-theme($theme, $colors) {
-  $foreground-palette: map-get($theme, foreground);
-  $background-palette: map-get($theme, background);
-
-  $background: mat-color($background-palette, background);
-  $card-background: mat-color($background-palette, card);
-  $card-background-dark: darken($card-background, 5%);
-
-  $muted: mat-color($foreground-palette, secondary-text);
-  $muted-light: mat-color($foreground-palette, disabled);
-  $border: mat-color($foreground-palette, divider);
-
-  $box-shadow-1: rgba(0, 0, 0, .2);
-  $box-shadow-2: rgba(0, 0, 0, .14);
-  $box-shadow-3: rgba(0, 0, 0, .12);
+  $foreground-palette: map.get($theme, foreground);
+  $background-palette: map.get($theme, background);
+  $background: theming.mat-color($background-palette, background);
+  $card-background: theming.mat-color($background-palette, card);
+  $card-background-dark: color.adjust($card-background, $lightness: -5%);
+  $muted: theming.mat-color($foreground-palette, secondary-text);
+  $muted-light: theming.mat-color($foreground-palette, disabled);
+  $border: theming.mat-color($foreground-palette, divider);
+  $box-shadow-1: rgb(0 0 0 / 0.2);
+  $box-shadow-2: rgb(0 0 0 / 0.14);
+  $box-shadow-3: rgb(0 0 0 / 0.12);
   $box-shadow: 0 3px 1px -2px $box-shadow-1, 0 2px 2px 0 $box-shadow-2, 0 1px 5px 0 $box-shadow-3;
   $white: #fff;
 
   // Global style overrides.
 
   a {
-    color: map-get($colors, primary);
+    color: map.get($colors, primary);
+
+    &:hover {
+      color: map.get($colors, primary-hover);
+    }
   }
 
   code {
@@ -61,51 +64,55 @@
   // Universal application styles.
 
   .kd-primary {
-    color: map-get($colors, primary);
+    color: map.get($colors, primary);
   }
 
   .kd-bg-primary {
-    background-color: map-get($colors, primary);
+    background-color: map.get($colors, primary);
   }
 
   .kd-accent {
-    color: map-get($colors, accent);
+    color: map.get($colors, accent);
   }
 
   .kd-success {
-    color: map-get($colors, indicator-success);
+    color: map.get($colors, indicator-success);
   }
 
   .kd-bg-success {
-    background-color: map-get($colors, indicator-success);
+    background-color: map.get($colors, indicator-success);
   }
 
   .kd-bg-success-light {
-    background-color: lighten(map-get($colors, indicator-success), 60%);
+    background-color: color.adjust(map.get($colors, indicator-success), $lightness: 15%);
   }
 
   .kd-warning {
-    color: map-get($colors, indicator-warning);
+    color: map.get($colors, indicator-warning);
   }
 
   .kd-bg-warning {
-    background-color: map-get($colors, indicator-warning);
+    background-color: map.get($colors, indicator-warning);
   }
 
   .kd-bg-warning-light {
-    background-color: lighten(map-get($colors, indicator-warning), 20%);
+    background-color: color.adjust(map.get($colors, indicator-warning), $lightness: 20%);
   }
 
   .kd-error {
-    color: map-get($colors, indicator-error);
+    color: map.get($colors, indicator-error);
   }
 
   .kd-bg-error {
-    background-color: map-get($colors, indicator-error);
+    background-color: map.get($colors, indicator-error);
   }
 
   .kd-bg-error-light {
-    background-color: lighten(map-get($colors, indicator-error), 33%);
+    background-color: color.adjust(map.get($colors, indicator-error), $lightness: 33%);
+  }
+
+  .kd-help {
+    color: $muted;
   }
 
   .kd-muted {
@@ -117,11 +124,11 @@
   }
 
   .kd-chart-green {
-    color: map-get($colors, chart-green);
+    color: map.get($colors, chart-green);
   }
 
   .kd-chart-blue {
-    color: map-get($colors, chart-blue);
+    color: map.get($colors, chart-blue);
   }
 
   .kd-bg-background {
@@ -152,7 +159,7 @@
   }
 
   .kd-notification-unread {
-    background-color: darken($background, 2.5%);
+    background-color: color.adjust($background, $lightness: -2.5%);
   }
 
   .kd-code-block {
@@ -160,7 +167,11 @@
   }
 
   .kd-chips-show-button {
-    color: map-get($colors, primary);
+    color: map.get($colors, primary);
+
+    &:hover {
+      color: map.get($colors, primary-hover);
+    }
   }
 
   .kd-minimized-card-header:hover {
@@ -168,26 +179,26 @@
   }
 
   .kd-search {
-    background-color: darken($background, 2.5%);
+    background-color: color.adjust($background, $lightness: -2.5%);
 
     input {
-      color: mat-color($foreground-palette, base);
+      color: theming.mat-color($foreground-palette, base);
     }
   }
 
   .kd-nav-item-button {
-    color: map-get($colors, toolbar-button);
+    color: map.get($colors, toolbar-button);
   }
 
   .kd-nav-item-button-active {
-    background-color: mat-color($background-palette, selected-button);
-    color: map-get($colors, primary);
+    background-color: theming.mat-color($background-palette, selected-button);
+    color: map.get($colors, primary);
   }
 
   .kd-search-input {
     background: $card-background;
     border-bottom-color: $border;
-    color: mat-color($foreground-palette, text);
+    color: theming.mat-color($foreground-palette, text);
   }
 
   .kd-graph-legend-entry {
@@ -202,14 +213,14 @@
 
   .mat-active,
   .mat-selected {
-    color: map-get($colors, primary) !important;
+    color: map.get($colors, primary) !important;
   }
 
   kd-namespace-selector {
     border: 1px solid $border;
 
     .kd-namespace-select {
-      color: mat-color($foreground-palette, secondary-text);
+      color: theming.mat-color($foreground-palette, secondary-text);
     }
 
     .kd-namespace-select-input-container {
@@ -225,11 +236,12 @@
 
   .kd-namespace-select-input {
     background: $card-background;
+    color: theming.mat-color($foreground-palette, secondary-text);
   }
 
   .kd-namespaced-item {
     background: $border;
-    color: mat-color($foreground-palette, secondary-text);
+    color: theming.mat-color($foreground-palette, secondary-text);
   }
 
   .kd-namespace-select-input-border,
@@ -238,7 +250,7 @@
   }
 
   .kd-cross-line-primary {
-    stroke: map-get($colors, primary);
+    stroke: map.get($colors, primary);
   }
 
   .kd-cross-outline {
@@ -254,20 +266,10 @@
   }
 
   .kd-user-help {
+    color: $muted;
+
     .material-icons {
-      color: map-get($colors, primary);
-    }
-
-    * {
-      color: $muted;
-    }
-
-    a {
-      color: map-get($colors, primary);
-
-      &:hover {
-        color: map-get($colors, toolbar-button);
-      }
+      color: map.get($colors, primary);
     }
   }
 
@@ -275,17 +277,13 @@
     border-right: 0;
   }
 
-  .mat-icon-button:hover {
+  .mat-icon-button:hover:not([disabled]) {
     background-color: $border !important;
-  }
-
-  .c3-tooltip {
-    color: $dark-primary-text;
   }
 
   .ngx-charts {
     text {
-      fill: mat-color($foreground-palette, text) !important;
+      fill: theming.mat-color($foreground-palette, text) !important;
     }
   }
 
@@ -309,6 +307,34 @@
   }
 
   .kd-edit-active {
-    color: map-get($colors, primary);
+    color: map.get($colors, primary);
+  }
+
+  .kd-volume-mounts {
+    border: 1px solid $border;
+  }
+
+  .mat-list {
+    border: 1px solid $border;
+  }
+
+  kd-logs {
+    .kd-card-content {
+      border-bottom: 1px solid color.adjust(map.get($colors, log-viewer-bg), $lightness: 75%);
+      border-top: 1px solid color.adjust(map.get($colors, log-viewer-bg), $lightness: 75%);
+    }
+
+    .kd-log-line-container {
+      background-color: map.get($colors, log-viewer-bg);
+      color: map.get($colors, log-viewer-text);
+
+      &::-webkit-scrollbar-thumb {
+        background-color: map.get($colors, log-viewer-scrollbar);
+      }
+
+      &.kd-logs-text-color-invert {
+        filter: color.invert(map.get($colors, log-viewer-text), 100%);
+      }
+    }
   }
 }

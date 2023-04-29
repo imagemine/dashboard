@@ -17,6 +17,10 @@
             "translation": "i18n/de/messages.de.xlf",
             "baseHref": ""
           },
+          "es": {
+            "translation": "i18n/es/messages.es.xlf",
+            "baseHref": ""
+          },
           "fr": {
             "translation": "i18n/fr/messages.fr.xlf",
             "baseHref": ""
@@ -47,13 +51,18 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "aot": true,
+            "optimization": false,
+            "progress": true,
             "outputPath": ".tmp/frontend",
             "index": "src/app/frontend/index.html",
             "main": "src/app/frontend/index.ts",
-            "tsConfig": "src/app/frontend/../../../aio/tsconfig.app.json",
+            "tsConfig": "aio/tsconfig.app.json",
             "polyfills": "src/app/frontend/polyfills.ts",
             "i18nMissingTranslation": "error",
+            "allowedCommonJsDependencies": [
+              "truncate-url",
+              "strip-ansi"
+            ],
             "assets": [
               {
                 "glob": "**/*",
@@ -71,12 +80,15 @@
                 "output": "/ace"
               }
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/app/frontend"
+              ]
+            },
             "styles": [
-              "node_modules/highlight.js/styles/github.css",
               "node_modules/material-design-icons/iconfont/material-icons.css",
               "node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
               "node_modules/xterm/css/xterm.css",
-              "node_modules/c3/c3.min.css",
               "src/app/frontend/index.scss"
             ],
             "scripts": [
@@ -94,12 +106,12 @@
                   "maximumWarning": "6kb"
                 }
               ],
+              "aot": true,
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
-              "aot": true,
+              "localize": true,
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
@@ -128,34 +140,6 @@
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
             "browserTarget": "kubernetes-dashboard:build"
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "src/app/frontend/index.spec.ts",
-            "karmaConfig": "aio/karma.conf.js",
-            "polyfills": "src/app/frontend/polyfills.ts",
-            "tsConfig": "src/app/frontend/../../../aio/tsconfig.spec.json",
-            "scripts": [],
-            "styles": [
-              "node_modules/material-design-icons/iconfont/material-icons.css",
-              "node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
-              "node_modules/c3/c3.min.css",
-              "src/app/frontend/index.scss"
-            ],
-            "assets": [
-              "src/app/frontend/assets"
-            ]
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "src/tsconfig.json"
-            ],
-            "exclude": []
           }
         }
       }

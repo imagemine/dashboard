@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@import '../variables';
+@use '../variables' as *;
 
 %kd-toolbar-logo-placeholder {
   height: 4 * $baseline-grid;
@@ -57,25 +57,27 @@
   box-shadow: $whiteframe-shadow-1dp;
   height: 7 * $baseline-grid;
   min-height: 7 * $baseline-grid;
-  padding-left: .5 * $baseline-grid;
+  padding-left: 0.5 * $baseline-grid;
+
   // Move entire second toolbar above content to avoid elements overlap with
   // shadow (there was problem with it on IE).
-  z-index: 1;
+  z-index: 100;
 }
 
 .kd-system-banner {
   box-shadow: $whiteframe-shadow-1dp;
   display: inline;
   font-size: $body-font-size-base;
-  height: 6 * $baseline-grid;
-  line-height: 6 * $baseline-grid;
-  min-height: 6 * $baseline-grid;
+  height: 4 * $baseline-grid;
+  line-height: 4 * $baseline-grid;
+  min-height: 4 * $baseline-grid;
   overflow: hidden;
   padding: 0 (3 * $baseline-grid);
   white-space: nowrap;
+
   // Move entire system banner above content to avoid elements overlap with
   // shadow (there was problem with it on IE).
-  z-index: 2;
+  z-index: 200;
 }
 
 .kd-chrome-container {
@@ -87,16 +89,4 @@
 
 .kd-scroll-container {
   overflow-x: auto;
-
-  ::before {
-    content: '';
-    display: block;
-    margin-bottom: 2.5 * $baseline-grid;
-  }
-
-  ::after {
-    content: '';
-    display: block;
-    padding-bottom: 2 * $baseline-grid;
-  }
 }

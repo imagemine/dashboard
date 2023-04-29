@@ -14,7 +14,7 @@
 
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {FlexLayoutModule} from '@angular/flex-layout';
 import {MatCardModule} from '@angular/material/card';
 import {MatDividerModule} from '@angular/material/divider';
@@ -22,11 +22,11 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {AppConfig} from '@api/backendapi';
-import {ResourcesRatio} from '@api/frontendapi';
-
-import {ConfigService} from '../../services/global/config';
-import {CardComponent} from '../card/component';
+import {AppConfig} from '@api/root.api';
+import {ResourcesRatio} from '@api/root.ui';
+import {CardComponent} from '@common/components/card/component';
+import {ConfigService} from '@common/services/global/config';
+import {MESSAGES, MESSAGES_DI_TOKEN} from '../../../index.messages';
 
 import {WorkloadStatusComponent} from './component';
 
@@ -67,7 +67,7 @@ describe('WorkloadStatusComponent', () => {
   let configService: ConfigService;
   let testHostFixture: ComponentFixture<WorkloadStatusComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [CardComponent, WorkloadStatusComponent],
       imports: [
@@ -79,11 +79,11 @@ describe('WorkloadStatusComponent', () => {
         HttpClientTestingModule,
         FlexLayoutModule,
       ],
-      providers: [ConfigService],
+      providers: [ConfigService, {provide: MESSAGES_DI_TOKEN, useValue: MESSAGES}],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
-    httpMock = TestBed.get(HttpTestingController);
-    configService = TestBed.get(ConfigService);
+    httpMock = TestBed.inject(HttpTestingController);
+    configService = TestBed.inject(ConfigService);
   }));
 
   beforeEach(() => {
@@ -95,22 +95,13 @@ describe('WorkloadStatusComponent', () => {
     testHostFixture = TestBed.createComponent(WorkloadStatusComponent);
   });
 
-  it('shows component heading', () => {
-    testHostFixture.detectChanges();
-    const debugElement = testHostFixture.debugElement.query(By.css('kd-card mat-card mat-card-title div'));
-    expect(debugElement).toBeTruthy();
-
-    const htmlElement = debugElement.nativeElement;
-    expect(htmlElement.innerText).toContain('Workload Status');
-  });
-
   it('does not show cron jobs status', () => {
     const component = testHostFixture.componentInstance;
     component.resourcesRatio = testResourcesRatio;
 
     testHostFixture.detectChanges();
     const debugElements = testHostFixture.debugElement.queryAll(
-      By.css('kd-card mat-card div mat-card-content div.kd-graph-title'),
+      By.css('kd-card mat-card div mat-card-content div.kd-graph-title')
     );
 
     debugElements.forEach(debugElement => {

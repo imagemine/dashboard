@@ -14,14 +14,14 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {CRD, CRDDetail} from '@api/backendapi';
-import {Subject, Subscription} from 'rxjs';
+import {CRDDetail} from '@api/root.api';
+import {Subject} from 'rxjs';
 import {switchMap, takeUntil, tap} from 'rxjs/operators';
 
-import {ActionbarService, ResourceMeta} from '../../common/services/global/actionbar';
-import {NotificationsService} from '../../common/services/global/notifications';
-import {ResourceService} from '../../common/services/resource/resource';
-import {EndpointManager, Resource} from '../../common/services/resource/endpoint';
+import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
+import {NotificationsService} from '@common/services/global/notifications';
+import {ResourceService} from '@common/services/resource/resource';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
 
 @Component({selector: 'kd-crd-detail', templateUrl: './template.html'})
 export class CRDDetailComponent implements OnInit, OnDestroy {
@@ -36,7 +36,7 @@ export class CRDDetailComponent implements OnInit, OnDestroy {
     private readonly crd_: ResourceService<CRDDetail>,
     private readonly actionbar_: ActionbarService,
     private readonly activatedRoute_: ActivatedRoute,
-    private readonly notifications_: NotificationsService,
+    private readonly notifications_: NotificationsService
   ) {}
 
   ngOnInit(): void {

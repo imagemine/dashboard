@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import {NgModule} from '@angular/core';
+import {ConfirmDialog} from '@common/dialogs/config/dialog';
 
 import {SharedModule} from '../../shared.module';
 import {ComponentsModule} from '../components/module';
@@ -21,8 +22,10 @@ import {AlertDialog} from './alert/dialog';
 import {DeleteResourceDialog} from './deleteresource/dialog';
 import {LogsDownloadDialog} from './download/dialog';
 import {EditResourceDialog} from './editresource/dialog';
+import {RestartResourceDialog} from './restartresource/dialog';
 import {ScaleResourceDialog} from './scaleresource/dialog';
 import {TriggerResourceDialog} from './triggerresource/dialog';
+import {PreviewDeploymentDialog} from './previewdeployment/dialog';
 
 @NgModule({
   imports: [SharedModule, ComponentsModule],
@@ -31,24 +34,31 @@ import {TriggerResourceDialog} from './triggerresource/dialog';
     EditResourceDialog,
     DeleteResourceDialog,
     LogsDownloadDialog,
+    RestartResourceDialog,
     ScaleResourceDialog,
     TriggerResourceDialog,
+    ConfirmDialog,
+    PreviewDeploymentDialog,
   ],
   exports: [
     AlertDialog,
     EditResourceDialog,
     DeleteResourceDialog,
     LogsDownloadDialog,
+    RestartResourceDialog,
     ScaleResourceDialog,
     TriggerResourceDialog,
+    PreviewDeploymentDialog,
   ],
   entryComponents: [
     AlertDialog,
     EditResourceDialog,
     DeleteResourceDialog,
     LogsDownloadDialog,
+    RestartResourceDialog,
     ScaleResourceDialog,
     TriggerResourceDialog,
+    PreviewDeploymentDialog,
   ],
 })
 export class DialogsModule {}

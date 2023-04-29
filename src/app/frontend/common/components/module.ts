@@ -25,6 +25,7 @@ import {ActionbarDetailEditComponent} from './actionbar/detailactions/edit/compo
 import {ActionbarDetailExecComponent} from './actionbar/detailactions/exec/component';
 import {ActionbarDetailLogsComponent} from './actionbar/detailactions/logs/component';
 import {ActionbarDetailPinComponent} from './actionbar/detailactions/pin/component';
+import {ActionbarDetailRestartComponent} from './actionbar/detailactions/restart/component';
 import {ActionbarDetailScaleComponent} from './actionbar/detailactions/scale/component';
 import {ActionbarDetailTriggerComponent} from './actionbar/detailactions/trigger/component';
 import {DefaultActionbar} from './actionbars/default/component';
@@ -49,6 +50,7 @@ import {GraphComponent} from './graph/component';
 import {GraphCardComponent} from './graphcard/component';
 import {GraphMetricsComponent} from './graphmetrics/component';
 import {HiddenPropertyComponent} from './hiddenproperty/component';
+import {IngressRuleFlatListComponent} from './ingressrulelist/component';
 import {ResourceLimitListComponent} from './limits/component';
 import {ColumnComponent} from './list/column/component';
 import {MenuComponent} from './list/column/menu/component';
@@ -61,10 +63,12 @@ import {NamespaceSelectorComponent} from './namespace/component';
 import {ObjectMetaComponent} from './objectmeta/component';
 import {PodStatusCardComponent} from './podstatus/component';
 import {PolicyRuleListComponent} from './policyrule/component';
+import {ProbeComponent} from './probe/component';
 import {PropertyComponent} from './property/component';
 import {ProxyComponent} from './proxy/component';
 import {ResourceQuotaListComponent} from './quotas/component';
 import {ClusterRoleListComponent} from './resourcelist/clusterrole/component';
+import {ClusterRoleBindingListComponent} from './resourcelist/clusterrolebinding/component';
 import {ConfigMapListComponent} from './resourcelist/configmap/component';
 import {CRDListComponent} from './resourcelist/crd/component';
 import {CRDObjectListComponent} from './resourcelist/crdobject/component';
@@ -74,9 +78,11 @@ import {DaemonSetListComponent} from './resourcelist/daemonset/component';
 import {DeploymentListComponent} from './resourcelist/deployment/component';
 import {EventListComponent} from './resourcelist/event/component';
 import {HorizontalPodAutoscalerListComponent} from './resourcelist/horizontalpodautoscaler/component';
+import {IngressClassListComponent} from './resourcelist/ingressclass/component';
 import {IngressListComponent} from './resourcelist/ingress/component';
 import {JobListComponent} from './resourcelist/job/component';
 import {NamespaceListComponent} from './resourcelist/namespace/component';
+import {NetworkPolicyListComponent} from './resourcelist/networkpolicy/component';
 import {NodeListComponent} from './resourcelist/node/component';
 import {PersistentVolumeListComponent} from './resourcelist/persistentvolume/component';
 import {PersistentVolumeClaimListComponent} from './resourcelist/persistentvolumeclaim/component';
@@ -84,17 +90,22 @@ import {PluginListComponent} from './resourcelist/plugin/component';
 import {PodListComponent} from './resourcelist/pod/component';
 import {ReplicaSetListComponent} from './resourcelist/replicaset/component';
 import {ReplicationControllerListComponent} from './resourcelist/replicationcontroller/component';
+import {RoleListComponent} from './resourcelist/role/component';
+import {RoleBindingListComponent} from './resourcelist/rolebinding/component';
 import {SecretListComponent} from './resourcelist/secret/component';
 import {ServiceListComponent} from './resourcelist/service/component';
+import {ServiceAccountListComponent} from './resourcelist/serviceaccount/component';
 import {StatefulSetListComponent} from './resourcelist/statefulset/component';
 import {StorageClassListComponent} from './resourcelist/storageclass/component';
+import {SecurityContextComponent} from './securitycontext/component';
 import {CpuSparklineComponent} from './sparkline/cpu/component';
 import {MemorySparklineComponent} from './sparkline/memory/component';
+import {SubjectListComponent} from './subject/component';
 import {TextInputComponent} from './textinput/component';
 import {UploadFileComponent} from './uploadfile/component';
+import {VolumeMountComponent} from './volumemount/component';
 import {WorkloadStatusComponent} from './workloadstatus/component';
 import {ZeroStateComponent} from './zerostate/component';
-import {ServiceAccountListComponent} from './resourcelist/serviceaccount/component';
 
 const components = [
   ActionbarDetailActionsComponent,
@@ -104,6 +115,7 @@ const components = [
   ActionbarDetailLogsComponent,
   ActionbarDetailExecComponent,
   ActionbarDetailPinComponent,
+  ActionbarDetailRestartComponent,
   ActionbarComponent,
   ActionbarDetailTriggerComponent,
   BreadcrumbsComponent,
@@ -112,6 +124,7 @@ const components = [
   ChipsComponent,
   CronJobListComponent,
   ClusterRoleListComponent,
+  ClusterRoleBindingListComponent,
   ConfigMapListComponent,
   PluginListComponent,
   ColumnComponent,
@@ -134,7 +147,9 @@ const components = [
   GraphMetricsComponent,
   HiddenPropertyComponent,
   HorizontalPodAutoscalerListComponent,
+  IngressClassListComponent,
   IngressListComponent,
+  IngressRuleFlatListComponent,
   InternalEndpointComponent,
   JobListComponent,
   LoadingSpinner,
@@ -149,9 +164,11 @@ const components = [
   NamespaceChangeDialog,
   ObjectMetaComponent,
   PodStatusCardComponent,
+  ProbeComponent,
   PropertyComponent,
   ProxyComponent,
   PodListComponent,
+  SecurityContextComponent,
   PersistentVolumeListComponent,
   PersistentVolumeClaimListComponent,
   PolicyRuleListComponent,
@@ -174,6 +191,11 @@ const components = [
   UploadFileComponent,
   ZeroStateComponent,
   WorkloadStatusComponent,
+  NetworkPolicyListComponent,
+  RoleListComponent,
+  RoleBindingListComponent,
+  SubjectListComponent,
+  VolumeMountComponent,
 ];
 
 @NgModule({

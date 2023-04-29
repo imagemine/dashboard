@@ -14,13 +14,12 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {CRD, CRDList} from '@api/backendapi';
+import {CRD, CRDList} from '@api/root.api';
+import {ResourceListWithStatuses} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {ResourceService} from '@common/services/resource/resource';
 import {Observable} from 'rxjs';
-
-import {ResourceListWithStatuses} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {ResourceService} from '../../../services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
@@ -35,7 +34,7 @@ export class CRDListComponent extends ResourceListWithStatuses<CRDList, CRD> {
   constructor(
     private readonly crd_: ResourceService<CRDList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super(Resource.crdFull, notifications, cdr);
     this.id = ListIdentifier.crd;
@@ -45,9 +44,9 @@ export class CRDListComponent extends ResourceListWithStatuses<CRDList, CRD> {
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);
 
     // Register status icon handlers
-    this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState);
-    this.registerBinding(this.icon.help, 'kd-muted', this.isInUnknownState);
-    this.registerBinding(this.icon.error, 'kd-error', this.isInErrorState);
+    this.registerBinding('kd-success', r => r.established === 'True', 'Established');
+    this.registerBinding('kd-muted', r => r.established === 'Unknown', 'Unknown');
+    this.registerBinding('kd-error', r => r.established === 'False', 'Not established');
   }
 
   isNamespaced(crd: CRD): string {
@@ -62,16 +61,8 @@ export class CRDListComponent extends ResourceListWithStatuses<CRDList, CRD> {
     return crdList.items;
   }
 
-  isInErrorState(resource: CRD): boolean {
-    return resource.established === 'False';
-  }
-
-  isInUnknownState(resource: CRD): boolean {
-    return resource.established === 'Unknown';
-  }
-
-  isInSuccessState(resource: CRD): boolean {
-    return resource.established === 'True';
+  getDisplayName(name: string): string {
+    return name.replace(/([A-Z]+)/g, ' $1').replace(/([A-Z][a-z])/g, ' $1');
   }
 
   getDisplayColumns(): string[] {

@@ -14,9 +14,10 @@
 
 import {NgModule} from '@angular/core';
 import {Route, RouterModule} from '@angular/router';
-import {DEFAULT_ACTIONBAR} from '../../../common/components/actionbars/routing';
+import {DEFAULT_ACTIONBAR} from '@common/components/actionbars/routing';
+import {BREADCRUMBS} from '../../../index.messages';
 
-import {CONFIG_ROUTE} from '../../config/routing';
+import {CLUSTER_ROUTE} from '../routing';
 
 import {ServiceAccountDetailComponent} from './detail/component';
 import {ServiceAccountListComponent} from './list/component';
@@ -25,8 +26,8 @@ const SERVICEACCOUNT_LIST_ROUTE: Route = {
   path: '',
   component: ServiceAccountListComponent,
   data: {
-    breadcrumb: 'Service Accounts',
-    parent: CONFIG_ROUTE,
+    breadcrumb: BREADCRUMBS.ServiceAccounts,
+    parent: CLUSTER_ROUTE,
   },
 };
 

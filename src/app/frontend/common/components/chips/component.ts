@@ -22,12 +22,13 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
-import {StringMap} from '@api/backendapi';
-
-import {ChipDialog} from './chipdialog/dialog';
-
+import {StringMap} from '@api/root.shared';
 // @ts-ignore
-import * as truncateUrl from 'truncate-url';
+import cropUrl from 'crop-url';
+
+import {GlobalSettingsService} from '../../services/global/globalsettings';
+import {ChipDialog} from './chipdialog/dialog';
+import {KdStateService} from '@common/services/global/state';
 
 export interface Chip {
   key: string;
@@ -45,25 +46,33 @@ const URL_REGEXP = new RegExp(
     '){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*' +
     '[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]' +
     '+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))\\.?)(?::\\d{2,5})?(?:[/?#]\\S*)?$',
-  'i',
+  'i'
 );
 
 const MAX_CHIP_VALUE_LENGTH = 63;
 
 @Component({
   selector: 'kd-chips',
+  styleUrls: ['./style.scss'],
   templateUrl: './template.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChipsComponent implements OnInit, OnChanges {
-  @Input() map: StringMap | string[];
-  @Input() minChipsVisible = 2;
+  @Input() map: StringMap | string[] | number[];
+  @Input() displayAll = false;
   keys: string[];
   isShowingAll = false;
+  private _labelsLimit = 3;
 
-  constructor(private readonly dialog_: MatDialog, private readonly cdr_: ChangeDetectorRef) {}
+  constructor(
+    private readonly _kdStateService: KdStateService,
+    private readonly _globalSettingsService: GlobalSettingsService,
+    private readonly _matDialog: MatDialog,
+    private readonly _changeDetectorRef: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
+    this._labelsLimit = this._globalSettingsService.getLabelsLimit();
     this.processMap();
   }
 
@@ -71,6 +80,68 @@ export class ChipsComponent implements OnInit, OnChanges {
     if (changes.map) {
       this.processMap();
     }
+  }
+
+  isVisible(index: number): boolean {
+    return this.isShowingAll || index < this._labelsLimit || this.displayAll;
+  }
+
+  isAnythingHidden(): boolean {
+    return this.keys.length > this._labelsLimit && !this.displayAll;
+  }
+
+  toggleView(): void {
+    this.isShowingAll = !this.isShowingAll;
+  }
+
+  isTooLong(value: string): boolean {
+    return value !== undefined && value.length > MAX_CHIP_VALUE_LENGTH;
+  }
+
+  getTruncatedURL(url: string): string {
+    return cropUrl(url, MAX_CHIP_VALUE_LENGTH);
+  }
+
+  isHref(value: string): boolean {
+    return URL_REGEXP.test(value.trim());
+  }
+
+  isSerializedRef(value: string): boolean {
+    try {
+      const obj = JSON.parse(value);
+      return obj && obj.kind === 'SerializedReference';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  getSerializedHref(value: string): string {
+    const ref = JSON.parse(value);
+    if (!ref.reference || !ref.reference.kind || !ref.reference.name || !ref.reference.namespace) {
+      return '';
+    }
+
+    return this._kdStateService.href(ref.reference.kind.toLowerCase(), ref.reference.name, ref.reference.namespace);
+  }
+
+  getSerializedRefDisplayName(value: string): string {
+    const ref = JSON.parse(value);
+    if (!ref.reference || !ref.reference.kind || !ref.reference.name || !ref.reference.namespace) {
+      return 'Invalid reference';
+    }
+
+    return `${ref.reference.kind.replace(/([A-Z])/g, ' $1')} ${ref.reference.namespace}/${ref.reference.name}`;
+  }
+
+  openChipDialog(key: string, value: string): void {
+    const dialogConfig: MatDialogConfig<Chip> = {
+      width: '630px',
+      data: {
+        key,
+        value,
+      },
+    };
+    this._matDialog.open(ChipDialog, dialogConfig);
   }
 
   private processMap() {
@@ -83,41 +154,6 @@ export class ChipsComponent implements OnInit, OnChanges {
     } else {
       this.keys = Object.keys(this.map);
     }
-    this.cdr_.markForCheck();
-  }
-
-  isVisible(index: number): boolean {
-    return this.isShowingAll || index < this.minChipsVisible;
-  }
-
-  isAnythingHidden(): boolean {
-    return this.keys.length > this.minChipsVisible;
-  }
-
-  toggleView(): void {
-    this.isShowingAll = !this.isShowingAll;
-  }
-
-  isTooLong(value: string): boolean {
-    return value !== undefined && value.length > MAX_CHIP_VALUE_LENGTH;
-  }
-
-  getTruncatedURL(url: string): string {
-    return truncateUrl(url, MAX_CHIP_VALUE_LENGTH);
-  }
-
-  isHref(value: string): boolean {
-    return URL_REGEXP.test(value.trim());
-  }
-
-  openChipDialog(key: string, value: string): void {
-    const dialogConfig: MatDialogConfig<Chip> = {
-      width: '630px',
-      data: {
-        key,
-        value,
-      },
-    };
-    this.dialog_.open(ChipDialog, dialogConfig);
+    this._changeDetectorRef.markForCheck();
   }
 }

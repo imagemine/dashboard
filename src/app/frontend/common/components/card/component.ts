@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, Input} from '@angular/core';
+import {Component, Inject, Input} from '@angular/core';
+import {IMessage} from '@api/root.ui';
+import {MESSAGES_DI_TOKEN} from '../../../index.messages';
 import {Animations} from '../../animations/animations';
 
 @Component({
@@ -23,18 +25,20 @@ import {Animations} from '../../animations/animations';
 })
 export class CardComponent {
   @Input() initialized = true;
-  @Input() role: string;
+  @Input() role: 'inner' | 'table' | 'inner-content';
   @Input() withFooter = false;
   @Input() withTitle = true;
   @Input() expandable = true;
+  @Input() expanded = true;
+  @Input() graphMode = false;
+  private classes_: string[] = [];
+
   @Input()
   set titleClasses(val: string) {
     this.classes_ = val.split(/\s+/);
   }
-  @Input() expanded = true;
-  @Input() graphMode = false;
 
-  private classes_: string[] = [];
+  constructor(@Inject(MESSAGES_DI_TOKEN) readonly message: IMessage) {}
 
   expand(): void {
     if (this.expandable) {

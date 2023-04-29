@@ -7,6 +7,18 @@
 [![GitHub release](https://img.shields.io/github/release/kubernetes/dashboard.svg)](https://github.com/kubernetes/dashboard/releases/latest)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/kubernetes/dashboard/blob/master/LICENSE)
 
+## ! IMPORTANT !
+We are introducing a soft code-freeze due to an ongoing major architecture changes. This means that only important or non-breaking changes can be merged to master such as:
+- Documentation updates
+- Security fixes
+- Critical bug fixes
+- Compatibility changes required to support new Kubernetes versions
+
+Tracking issues/pull requests:
+- https://github.com/kubernetes/dashboard/pull/7047
+
+## Introduction
+
 Kubernetes Dashboard is a general purpose, web-based UI for Kubernetes clusters. It allows users to manage applications running in the cluster and troubleshoot them, as well as manage the cluster itself.
 
 ![Dashboard UI workloads page](docs/images/dashboard-ui.png)
@@ -19,18 +31,18 @@ Kubernetes Dashboard is a general purpose, web-based UI for Kubernetes clusters.
 
 To deploy Dashboard, execute following command:
 
-```sh
-$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.2/aio/deploy/recommended.yaml
+```shell
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.6.1/aio/deploy/recommended.yaml
 ```
 
-Alternatively, you can install Dashboard using Helm as described at https://hub.helm.sh/charts/k8s-dashboard/kubernetes-dashboard.
+Alternatively, you can install Dashboard using Helm as described at [`https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard`](https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard).
 
 ### Access
 
 To access Dashboard from your local workstation you must create a secure channel to your Kubernetes cluster. Run the following command:
 
-```sh
-$ kubectl proxy
+```shell
+kubectl proxy
 ```
 Now access Dashboard at:
 
@@ -42,15 +54,15 @@ To find out how to create sample user and log in follow [Creating sample user](d
 
 **NOTE:**
 * Kubeconfig Authentication method does not support external identity providers or certificate-based authentication.
-* [metrics-server](https://github.com/kubernetes-sigs/metrics-server) has to be running in the cluster for the metrics and graphs to be available. Read more about it in [Integrations](docs/user/integrations.md) guide.
+* [Metrics-Server](https://github.com/kubernetes-sigs/metrics-server) has to be running in the cluster for the metrics and graphs to be available. Read more about it in [Integrations](docs/user/integrations.md) guide.
 
 ## Documentation
 
 Dashboard documentation can be found on [docs](docs/README.md) directory which contains:
 
-* [Common](docs/common/README.md): Entry-level overview
-* [User Guide](docs/user/README.md): [Installation](docs/user/installation.md), [Accessing Dashboard](docs/user/accessing-dashboard/README.md) and more for users
-* [Developer Guide](docs/developer/README.md): [Getting Started](docs/developer/getting-started.md), [Dependency Management](docs/developer/dependency-management.md) and more for anyone interested in contributing
+* [Common](docs/common/README.md): Entry-level overview.
+* [User Guide](docs/user/README.md): [Installation](docs/user/installation.md), [Accessing Dashboard](docs/user/accessing-dashboard/README.md) and more for users.
+* [Developer Guide](docs/developer/README.md): [Getting Started](docs/developer/getting-started.md), [Dependency Management](docs/developer/dependency-management.md) and more for anyone interested in contributing.
 
 ## Community, discussion, contribution, and support
 
@@ -66,7 +78,7 @@ You can reach the maintainers of this project at:
 
 ### Contribution
 
-Learn how to start contribution on the [Contributing Guidline](CONTRIBUTING.md)
+Learn how to start contribution on the [Contributing Guideline](CONTRIBUTING.md).
 
 ### Code of conduct
 

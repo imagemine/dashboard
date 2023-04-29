@@ -15,7 +15,7 @@
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {timer} from 'rxjs';
-import {Observable} from 'rxjs/Observable';
+import {Observable} from 'rxjs';
 import {publishReplay, refCount, switchMap, switchMapTo} from 'rxjs/operators';
 
 import {ResourceBase} from '../../resources/resource';
@@ -23,7 +23,7 @@ import {GlobalSettingsService} from '../global/globalsettings';
 import {NamespaceService} from '../global/namespace';
 
 @Injectable()
-export class ResourceService<T> extends ResourceBase<T> {
+export class ResourceService<T> extends ResourceBase {
   /**
    * We need to provide HttpClient here since the base is not annotated with
    * @Injectable
@@ -43,24 +43,20 @@ export class ResourceService<T> extends ResourceBase<T> {
           let interval = this.settings_.getResourceAutoRefreshTimeInterval();
           interval = interval === 0 ? undefined : interval * 1000;
           return timer(0, interval);
-        }),
+        })
       )
-      .pipe(
-        switchMapTo(
-          this.http_.get<T>(endpoint, {params}),
-        ),
-      )
+      .pipe(switchMapTo(this.http_.get<T>(endpoint, {params})))
       .pipe(publishReplay(1))
       .pipe(refCount());
   }
 }
 
 @Injectable()
-export class NamespacedResourceService<T> extends ResourceBase<T> {
+export class NamespacedResourceService<T> extends ResourceBase {
   constructor(
     readonly http: HttpClient,
     private readonly namespace_: NamespaceService,
-    private readonly settings_: GlobalSettingsService,
+    private readonly settings_: GlobalSettingsService
   ) {
     super(http);
   }
@@ -87,13 +83,9 @@ export class NamespacedResourceService<T> extends ResourceBase<T> {
           let interval = this.settings_.getResourceAutoRefreshTimeInterval();
           interval = interval === 0 ? undefined : interval * 1000;
           return timer(0, interval);
-        }),
+        })
       )
-      .pipe(
-        switchMapTo(
-          this.http_.get<T>(endpoint, {params}),
-        ),
-      )
+      .pipe(switchMapTo(this.http_.get<T>(endpoint, {params})))
       .pipe(publishReplay(1))
       .pipe(refCount());
   }

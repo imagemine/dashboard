@@ -23,7 +23,7 @@ limitations under the License.
        fxLayout="row"
        i18n>Daemon Sets</div>
   <div description><span class="kd-muted-light"
-          i18n>Items:&nbsp;</span>{{totalItems}}</div>
+          i18n>Items:&nbsp;</span>{{ totalItems }}</div>
   <div actions>
     <kd-card-list-filter></kd-card-list-filter>
   </div>
@@ -42,15 +42,12 @@ limitations under the License.
                multiTemplateDataRows>
       <ng-container matColumnDef="statusicon">
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let daemonSet; let index=index">
-          <mat-icon [ngClass]="getStatus(daemonSet).iconClass">
-            <ng-container *ngIf="showHoverIcon(index, daemonSet); else showStatus">
-              remove_red_eye
-            </ng-container>
+        <mat-cell *matCellDef="let daemonSet; let index = index">
+          <mat-icon [ngClass]="getStatus(daemonSet).iconClass"
+                    [matTooltip]="getStatus(daemonSet).iconTooltip">
+            <ng-container *ngIf="showHoverIcon(index, daemonSet); else showStatus"> remove_red_eye </ng-container>
 
-            <ng-template #showStatus>
-              {{getStatus(daemonSet).iconName}}
-            </ng-template>
+            <ng-template #showStatus> {{ getStatus(daemonSet).iconName }} </ng-template>
           </mat-icon>
         </mat-cell>
       </ng-container>
@@ -64,13 +61,15 @@ limitations under the License.
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header
+                         class="col-stretch-xl"
                          disableClear="true"
                          i18n>Name</mat-header-cell>
-        <mat-cell *matCellDef="let daemonSet">
+        <mat-cell *matCellDef="let daemonSet"
+                  class="col-stretch-xl">
           <a (click)="$event.stopPropagation()"
              [routerLink]="getDetailsHref(daemonSet.objectMeta.name, daemonSet.objectMeta.namespace)"
              queryParamsHandling="preserve">
-            {{daemonSet.objectMeta.name}}
+            {{ daemonSet.objectMeta.name }}
           </a>
         </mat-cell>
       </ng-container>
@@ -78,23 +77,39 @@ limitations under the License.
       <ng-container *ngIf="shouldShowColumn('namespace')"
                     matColumnDef="namespace">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-l col-min-90"
                          i18n>Namespace</mat-header-cell>
-        <mat-cell *matCellDef="let daemonSet">{{daemonSet.objectMeta.namespace}}</mat-cell>
+        <mat-cell *matCellDef="let daemonSet"
+                  class="col-stretch-l col-min-90">{{ daemonSet.objectMeta.namespace }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="images">
+        <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-xl"
+                         i18n>Images</mat-header-cell>
+        <mat-cell *matCellDef="let daemonSet"
+                  class="col-stretch-xl">
+          <kd-chips [map]="daemonSet.containerImages"></kd-chips>
+        </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="labels">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-xl"
                          i18n>Labels</mat-header-cell>
-        <mat-cell *matCellDef="let daemonSet">
+        <mat-cell *matCellDef="let daemonSet"
+                  class="col-stretch-xl">
           <kd-chips [map]="daemonSet.objectMeta.labels"></kd-chips>
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="pods">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-m"
                          i18n>Pods</mat-header-cell>
-        <mat-cell *matCellDef="let daemonSet">
-          {{daemonSet.podInfo.running}} / {{daemonSet.podInfo.desired}}
+        <mat-cell *matCellDef="let daemonSet"
+                  class="col-stretch-m">
+          {{ daemonSet.podInfo.running }} / {{ daemonSet.podInfo.desired }}
         </mat-cell>
       </ng-container>
 
@@ -102,18 +117,12 @@ limitations under the License.
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header
                          disableClear="true"
+                         class="col-stretch-m"
                          i18n>Created</mat-header-cell>
-        <mat-cell *matCellDef="let daemonSet">
+        <mat-cell *matCellDef="let daemonSet"
+                  class="col-stretch-m">
           <kd-date [date]="daemonSet.objectMeta.creationTimestamp"
                    relative></kd-date>
-        </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="images">
-        <mat-header-cell *matHeaderCellDef
-                         i18n>Images</mat-header-cell>
-        <mat-cell *matCellDef="let daemonSet">
-          <kd-chips [map]="daemonSet.containerImages"></kd-chips>
         </mat-cell>
       </ng-container>
 
@@ -131,16 +140,18 @@ limitations under the License.
                (mouseleave)="onRowLeave()"
                (click)="expand(index, row)"
                [ngClass]="{'kd-no-bottom-border': isRowExpanded(index, row), 'kd-clickable': hasErrors(row)}"
-               *matRowDef="let row; columns: getColumns(); let index=index"></mat-row>
+               *matRowDef="let row; columns: getColumns(); let index = index"></mat-row>
       <mat-row class="kd-detail-row"
                [ngClass]="{'kd-hidden': !isRowExpanded(index, row)}"
-               *matRowDef="let row; columns: ['statusDetail']; let index=index"></mat-row>
+               *matRowDef="let row; columns: ['statusDetail']; let index = index"></mat-row>
     </mat-table>
 
-    <mat-paginator [length]="totalItems"
-                   [pageSize]="itemsPerPage"
-                   [hidePageSize]="true"
-                   [showFirstLastButtons]="true"></mat-paginator>
+    <div [hidden]="totalItems <= itemsPerPage">
+      <mat-paginator [length]="totalItems"
+                     [pageSize]="itemsPerPage"
+                     hidePageSize
+                     showFirstLastButtons></mat-paginator>
+    </div>
   </div>
 
   <div content

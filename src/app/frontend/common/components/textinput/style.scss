@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@import '../../../variables';
+@use '../../../variables' as *;
 
 .kd-ace {
-  height: 50 * $baseline-grid;
+  height: 45 * $baseline-grid;
   width: 100%;
 }

@@ -20,13 +20,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kubernetes/dashboard/src/app/backend/handler/parser"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/customresourcedefinition/types"
-
-	"github.com/kubernetes/dashboard/src/app/backend/plugin"
-
-	"github.com/emicklei/go-restful"
+	"github.com/emicklei/go-restful/v3"
 	"golang.org/x/net/xsrftoken"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/remotecommand"
 
@@ -35,7 +31,9 @@ import (
 	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
 	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
+	"github.com/kubernetes/dashboard/src/app/backend/handler/parser"
 	"github.com/kubernetes/dashboard/src/app/backend/integration"
+	"github.com/kubernetes/dashboard/src/app/backend/plugin"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/clusterrole"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/clusterrolebinding"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
@@ -44,15 +42,18 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/controller"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/cronjob"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/customresourcedefinition"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/customresourcedefinition/types"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/daemonset"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/deployment"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/event"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/horizontalpodautoscaler"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/ingress"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/ingressclass"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/job"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/logs"
 	ns "github.com/kubernetes/dashboard/src/app/backend/resource/namespace"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/networkpolicy"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/node"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/persistentvolume"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/persistentvolumeclaim"
@@ -97,9 +98,7 @@ type TerminalResponse struct {
 // CreateHTTPAPIHandler creates a new HTTP handler that handles all requests to the API of the backend.
 func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clientapi.ClientManager,
 	authManager authApi.AuthManager, sManager settingsApi.SettingsManager,
-	sbManager systembanner.SystemBannerManager) (
-
-	http.Handler, error) {
+	sbManager systembanner.SystemBannerManager) (http.Handler, error) {
 	apiHandler := APIHandler{iManager: iManager, cManager: cManager, sManager: sManager}
 	wsContainer := restful.NewContainer()
 	wsContainer.EnableContentEncoding(true)
@@ -271,6 +270,23 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/deployment/{namespace}/{deployment}/newreplicaset").
 			To(apiHandler.handleGetDeploymentNewReplicaSet).
 			Writes(replicaset.ReplicaSet{}))
+	apiV1Ws.Route(
+		apiV1Ws.PUT("/{kind}/{namespace}/{deployment}/pause").
+			To(apiHandler.handleDeploymentPause).
+			Writes(deployment.DeploymentDetail{}))
+	apiV1Ws.Route(
+		apiV1Ws.PUT("/{kind}/{namespace}/{deployment}/rollback").
+			To(apiHandler.handleDeploymentRollback).
+			Reads(deployment.RolloutSpec{}).
+			Writes(deployment.RolloutSpec{}))
+	apiV1Ws.Route(
+		apiV1Ws.PUT("/{kind}/{namespace}/{deployment}/restart").
+			To(apiHandler.handleDeploymentRestart).
+			Writes(deployment.RolloutSpec{}))
+	apiV1Ws.Route(
+		apiV1Ws.PUT("/{kind}/{namespace}/{deployment}/resume").
+			To(apiHandler.handleDeploymentResume).
+			Writes(deployment.DeploymentDetail{}))
 
 	apiV1Ws.Route(
 		apiV1Ws.PUT("/scale/{kind}/{namespace}/{name}/").
@@ -395,6 +411,15 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 			Writes(common.EventList{}))
 
 	apiV1Ws.Route(
+		apiV1Ws.GET("/event").
+			To(apiHandler.handleGetEventList).
+			Writes(common.EventList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/event/{namespace}").
+			To(apiHandler.handleGetEventList).
+			Writes(common.EventList{}))
+
+	apiV1Ws.Route(
 		apiV1Ws.GET("/secret").
 			To(apiHandler.handleGetSecretList).
 			Writes(secret.SecretList{}))
@@ -445,6 +470,10 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/service/{namespace}/{service}/pod").
 			To(apiHandler.handleGetServicePods).
 			Writes(pod.PodList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/service/{namespace}/{service}/ingress").
+			To(apiHandler.handleGetServiceIngressList).
+			Writes(ingress.IngressList{}))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/serviceaccount").
@@ -479,6 +508,23 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/ingress/{namespace}/{name}").
 			To(apiHandler.handleGetIngressDetail).
 			Writes(ingress.IngressDetail{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/ingress/{namespace}/{ingress}/event").
+			To(apiHandler.handleGetIngressEvent).
+			Writes(common.EventList{}))
+
+	apiV1Ws.Route(
+		apiV1Ws.GET("/networkpolicy").
+			To(apiHandler.handleGetNetworkPolicyList).
+			Writes(networkpolicy.NetworkPolicyList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/networkpolicy/{namespace}").
+			To(apiHandler.handleGetNetworkPolicyList).
+			Writes(networkpolicy.NetworkPolicyList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/networkpolicy/{namespace}/{networkpolicy}").
+			To(apiHandler.handleGetNetworkPolicyDetail).
+			Writes(networkpolicy.NetworkPolicyDetail{}))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/statefulset").
@@ -638,6 +684,15 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/storageclass/{storageclass}/persistentvolume").
 			To(apiHandler.handleGetStorageClassPersistentVolumes).
 			Writes(persistentvolume.PersistentVolumeList{}))
+
+	apiV1Ws.Route(
+		apiV1Ws.GET("/ingressclass").
+			To(apiHandler.handleGetIngressClassList).
+			Writes(ingressclass.IngressClassList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/ingressclass/{ingressclass}").
+			To(apiHandler.handleGetIngressClass).
+			Writes(ingressclass.IngressClass{}))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/log/source/{namespace}/{resourceName}/{resourceType}").
@@ -1012,6 +1067,25 @@ func (apiHandler *APIHandler) handleGetIngressDetail(request *restful.Request, r
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
 
+func (apiHandler *APIHandler) handleGetIngressEvent(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("ingress")
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	dataSelect.MetricQuery = dataselect.NoMetrics
+	result, err := event.GetResourceEvents(k8sClient, dataSelect, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
 func (apiHandler *APIHandler) handleGetIngressList(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.cManager.Client(request)
 	if err != nil {
@@ -1041,6 +1115,59 @@ func (apiHandler *APIHandler) handleGetServicePods(request *restful.Request, res
 	dataSelect := parser.ParseDataSelectPathParameter(request)
 	dataSelect.MetricQuery = dataselect.StandardMetrics
 	result, err := resourceService.GetServicePods(k8sClient, apiHandler.iManager.Metric().Client(), namespace, name, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetServiceIngressList(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("service")
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	dataSelect.MetricQuery = dataselect.NoMetrics
+	result, err := resourceService.GetServiceIngressList(k8sClient, dataSelect, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetNetworkPolicyList(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := parseNamespacePathParameter(request)
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	result, err := networkpolicy.GetNetworkPolicyList(k8sClient, namespace, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetNetworkPolicyDetail(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("networkpolicy")
+	result, err := networkpolicy.GetNetworkPolicyDetail(k8sClient, namespace, name)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
@@ -1204,6 +1331,79 @@ func (apiHandler *APIHandler) handleDeployFromFile(request *restful.Request, res
 		Content: deploymentSpec.Content,
 		Error:   errorMessage,
 	})
+}
+
+func (apiHandler *APIHandler) handleDeploymentPause(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("deployment")
+	deploymentSpec, err := deployment.PauseDeployment(k8sClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, deploymentSpec)
+}
+
+func (apiHandler *APIHandler) handleDeploymentRollback(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	rolloutSpec := new(deployment.RolloutSpec)
+	if err := request.ReadEntity(rolloutSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("deployment")
+	rolloutSpec, err = deployment.RollbackDeployment(k8sClient, rolloutSpec, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, rolloutSpec)
+}
+
+func (apiHandler *APIHandler) handleDeploymentRestart(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("deployment")
+	rolloutSpec, err := deployment.RestartDeployment(k8sClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, rolloutSpec)
+}
+
+func (apiHandler *APIHandler) handleDeploymentResume(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespace := request.PathParameter("namespace")
+	name := request.PathParameter("deployment")
+	deploymentSpec, err := deployment.ResumeDeployment(k8sClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, deploymentSpec)
 }
 
 func (apiHandler *APIHandler) handleNameValidity(request *restful.Request, response *restful.Response) {
@@ -1767,6 +1967,23 @@ func (apiHandler *APIHandler) handleGetNamespaceEvents(request *restful.Request,
 	name := request.PathParameter("name")
 	dataSelect := parser.ParseDataSelectPathParameter(request)
 	result, err := event.GetNamespaceEvents(k8sClient, dataSelect, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetEventList(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	namespace := parseNamespacePathParameter(request)
+	result, err := event.GetEventList(k8sClient, namespace, dataSelect)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
@@ -2343,6 +2560,38 @@ func (apiHandler *APIHandler) handleGetStorageClassPersistentVolumes(request *re
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
 
+func (apiHandler *APIHandler) handleGetIngressClassList(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	dataSelect := parser.ParseDataSelectPathParameter(request)
+	result, err := ingressclass.GetIngressClassList(k8sClient, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetIngressClass(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	name := request.PathParameter("ingressclass")
+	result, err := ingressclass.GetIngressClass(k8sClient, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
 func (apiHandler *APIHandler) handleGetPodPersistentVolumeClaims(request *restful.Request,
 	response *restful.Response) {
 	k8sClient, err := apiHandler.cManager.Client(request)
@@ -2541,16 +2790,19 @@ func (apiHandler *APIHandler) handleLogs(request *restful.Request, response *res
 
 func (apiHandler *APIHandler) handleLogFile(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.cManager.Client(request)
+	opts := new(v1.PodLogOptions)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
 	}
+
 	namespace := request.PathParameter("namespace")
 	podID := request.PathParameter("pod")
 	containerID := request.PathParameter("container")
-	usePreviousLogs := request.QueryParameter("previous") == "true"
+	opts.Previous = request.QueryParameter("previous") == "true"
+	opts.Timestamps = request.QueryParameter("timestamps") == "true"
 
-	logStream, err := container.GetLogFile(k8sClient, namespace, podID, containerID, usePreviousLogs)
+	logStream, err := container.GetLogFile(k8sClient, namespace, podID, containerID, opts)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return

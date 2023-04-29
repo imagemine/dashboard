@@ -48,6 +48,10 @@ limitations under the License.
           (click)="onEdit()"
           i18n>Edit</button>
   <button mat-menu-item
+          *ngIf="isRestartEnabled()"
+          (click)="onRestart()"
+          i18n>Restart</button>
+  <button mat-menu-item
           id="delete"
           (click)="onDelete()"
           i18n>Delete</button>
@@ -58,5 +62,6 @@ limitations under the License.
    id="more-menu"
    [matMenuTriggerFor]="actions"
    (click)="$event.stopPropagation()">
-  <mat-icon matTooltip="Actions">more_vert</mat-icon>
+  <mat-icon i18n-matTooltip
+            matTooltip="Actions">more_vert</mat-icon>
 </a>

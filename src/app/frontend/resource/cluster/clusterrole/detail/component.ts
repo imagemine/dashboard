@@ -14,21 +14,23 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {ClusterRoleDetail} from '@api/backendapi';
-import {Subscription} from 'rxjs/Subscription';
+import {ClusterRoleDetail} from '@api/root.api';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
-import {ActionbarService, ResourceMeta} from '../../../../common/services/global/actionbar';
-import {NotificationsService} from '../../../../common/services/global/notifications';
-import {EndpointManager, Resource} from '../../../../common/services/resource/endpoint';
-import {ResourceService} from '../../../../common/services/resource/resource';
+import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {ResourceService} from '@common/services/resource/resource';
 
 @Component({
   selector: 'kd-cluster-role-detail',
   templateUrl: './template.html',
 })
 export class ClusterRoleDetailComponent implements OnInit, OnDestroy {
-  private clusterRoleSubscription_: Subscription;
+  private readonly unsubscribe_ = new Subject<void>();
   private readonly endpoint_ = EndpointManager.resource(Resource.clusterRole);
+
   clusterRole: ClusterRoleDetail;
   isInitialized = false;
 
@@ -36,14 +38,15 @@ export class ClusterRoleDetailComponent implements OnInit, OnDestroy {
     private readonly clusterRole_: ResourceService<ClusterRoleDetail>,
     private readonly actionbar_: ActionbarService,
     private readonly route_: ActivatedRoute,
-    private readonly notifications_: NotificationsService,
+    private readonly notifications_: NotificationsService
   ) {}
 
   ngOnInit(): void {
     const resourceName = this.route_.snapshot.params.resourceName;
 
-    this.clusterRoleSubscription_ = this.clusterRole_
+    this.clusterRole_
       .get(this.endpoint_.detail(), resourceName)
+      .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: ClusterRoleDetail) => {
         this.clusterRole = d;
         this.notifications_.pushErrors(d.errors);
@@ -53,7 +56,8 @@ export class ClusterRoleDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.clusterRoleSubscription_.unsubscribe();
+    this.unsubscribe_.next();
+    this.unsubscribe_.complete();
     this.actionbar_.onDetailsLeave.emit();
   }
 }

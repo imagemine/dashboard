@@ -14,25 +14,60 @@
 
 import {InjectionToken} from '@angular/core';
 import {MatTooltipDefaultOptions} from '@angular/material/tooltip';
+import {IConfig, LanguageConfig} from 'typings/root.ui';
 
-export const CONFIG_DI_TOKEN = new InjectionToken<Config>('kd.config');
+const supportedLanguages: LanguageConfig[] = [
+  {
+    label: 'German',
+    value: 'de',
+  },
+  {
+    label: 'Spanish',
+    value: 'es',
+  },
+  {
+    label: 'French',
+    value: 'fr',
+  },
+  {
+    label: 'English',
+    value: 'en',
+  },
+  {
+    label: 'Japanese',
+    value: 'ja',
+  },
+  {
+    label: 'Korean',
+    value: 'ko',
+  },
+  {
+    label: 'Chinese Simplified',
+    value: 'zh-Hans',
+  },
+  {
+    label: 'Chinese Traditional',
+    value: 'zh-Hant',
+  },
+  {
+    label: 'Chinese Traditional Hong Kong',
+    value: 'zh-Hant-HK',
+  },
+];
 
-export interface Config {
-  authTokenCookieName: string;
-  skipLoginPageCookieName: string;
-  csrfHeaderName: string;
-  authTokenHeaderName: string;
-  defaultNamespace: string;
-  authModeCookieName: string;
-}
+export const CONFIG_DI_TOKEN = new InjectionToken<IConfig>('kd.config');
 
-export const CONFIG: Config = {
+export const CONFIG: IConfig = {
   authTokenCookieName: 'jweToken',
   authTokenHeaderName: 'jweToken',
+  usernameCookieName: 'username',
   csrfHeaderName: 'X-CSRF-TOKEN',
   skipLoginPageCookieName: 'skipLoginPage',
   defaultNamespace: 'default',
   authModeCookieName: 'authMode',
+  supportedLanguages: supportedLanguages,
+  defaultLanguage: 'en',
+  languageCookieName: 'lang',
 };
 
 // Override default material tooltip values.

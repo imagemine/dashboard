@@ -17,8 +17,8 @@ import {HttpClient} from '@angular/common/http';
 import {Component, Inject, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 
-import {AssetsService} from '../common/services/global/assets';
-import {GlobalSettingsService} from '../common/services/global/globalsettings';
+import {AssetsService} from '@common/services/global/assets';
+import {GlobalSettingsService} from '@common/services/global/globalsettings';
 
 class SystemBanner {
   message: string;
@@ -40,7 +40,7 @@ export class ChromeComponent implements OnInit {
     private readonly http_: HttpClient,
     private readonly router_: Router,
     @Inject(DOCUMENT) private readonly document_: Document,
-    private readonly globalSettings_: GlobalSettingsService,
+    private readonly globalSettings_: GlobalSettingsService
   ) {}
 
   ngOnInit(): void {
@@ -54,8 +54,8 @@ export class ChromeComponent implements OnInit {
     this.registerVisibilityChangeHandler_();
   }
 
-  getOverviewStateName(): string {
-    return '/overview';
+  getWorkloadsStateName(): string {
+    return '/workloads';
   }
 
   isSystemBannerVisible(): boolean {
@@ -85,7 +85,7 @@ export class ChromeComponent implements OnInit {
   private registerVisibilityChangeHandler_(): void {
     if (typeof this.document_.addEventListener === 'undefined') {
       console.log(
-        'Your browser does not support Page Visibility API. Page cannot properly stop background tasks when tab is inactive.',
+        'Your browser does not support Page Visibility API. Page cannot properly stop background tasks when tab is inactive.'
       );
       return;
     }

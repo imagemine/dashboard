@@ -14,15 +14,15 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {DeploymentDetail, ReplicaSet} from '@api/backendapi';
+import {DeploymentDetail, ReplicaSet} from '@api/root.api';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
-import {ActionbarService, ResourceMeta} from '../../../../common/services/global/actionbar';
-import {NotificationsService} from '../../../../common/services/global/notifications';
-import {KdStateService} from '../../../../common/services/global/state';
-import {EndpointManager, Resource} from '../../../../common/services/resource/endpoint';
-import {NamespacedResourceService} from '../../../../common/services/resource/resource';
+import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
+import {NotificationsService} from '@common/services/global/notifications';
+import {KdStateService} from '@common/services/global/state';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
 
 @Component({
   selector: 'kd-deployment-detail',
@@ -45,7 +45,7 @@ export class DeploymentDetailComponent implements OnInit, OnDestroy {
     private readonly activatedRoute_: ActivatedRoute,
     private readonly actionbar_: ActionbarService,
     private readonly kdState_: KdStateService,
-    private readonly notifications_: NotificationsService,
+    private readonly notifications_: NotificationsService
   ) {}
 
   ngOnInit(): void {
@@ -58,7 +58,7 @@ export class DeploymentDetailComponent implements OnInit, OnDestroy {
     this.horizontalPodAutoscalerEndpoint = this.endpoint_.child(
       resourceName,
       Resource.horizontalPodAutoscaler,
-      resourceNamespace,
+      resourceNamespace
     );
 
     this.deployment_
@@ -83,7 +83,7 @@ export class DeploymentDetailComponent implements OnInit, OnDestroy {
     return this.kdState_.href(
       this.newReplicaSet.typeMeta.kind,
       this.newReplicaSet.objectMeta.name,
-      this.newReplicaSet.objectMeta.namespace,
+      this.newReplicaSet.objectMeta.namespace
     );
   }
 

@@ -25,13 +25,13 @@ limitations under the License.
       <div fxLayout="column"
            fxLayoutAlign="center center">
         <ngx-charts-pie-chart [results]="resourcesRatio.cronJobRatio"
-                              [view]="[200,200]"
+                              [view]="size"
                               [customColors]="getCustomColor"
-                              [animations]="false">
+                              [animations]="animations"
+                              [labels]="labels"
+                              [trimLabels]="trimLabels">
           <ng-template #tooltipTemplate
-                       let-model="model">
-            {{model.value | number}}%
-          </ng-template>
+                       let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
       </div>
       <div class="kd-graph-title"
@@ -43,13 +43,13 @@ limitations under the License.
       <div fxLayout="column"
            fxLayoutAlign="center center">
         <ngx-charts-pie-chart [results]="resourcesRatio.daemonSetRatio"
-                              [view]="[200,200]"
+                              [view]="size"
                               [customColors]="getCustomColor"
-                              [animations]="false">
+                              [animations]="animations"
+                              [labels]="labels"
+                              [trimLabels]="trimLabels">
           <ng-template #tooltipTemplate
-                       let-model="model">
-            {{model.value | number}}%
-          </ng-template>
+                       let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
       </div>
       <div class="kd-graph-title"
@@ -61,13 +61,13 @@ limitations under the License.
       <div fxLayout="column"
            fxLayoutAlign="center center">
         <ngx-charts-pie-chart [results]="resourcesRatio.deploymentRatio"
-                              [view]="[200,200]"
+                              [view]="size"
                               [customColors]="getCustomColor"
-                              [animations]="false">
+                              [animations]="animations"
+                              [labels]="labels"
+                              [trimLabels]="trimLabels">
           <ng-template #tooltipTemplate
-                       let-model="model">
-            {{model.value | number}}%
-          </ng-template>
+                       let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
       </div>
       <div class="kd-graph-title"
@@ -79,13 +79,13 @@ limitations under the License.
       <div fxLayout="column"
            fxLayoutAlign="center center">
         <ngx-charts-pie-chart [results]="resourcesRatio.jobRatio"
-                              [view]="[200,200]"
+                              [view]="size"
                               [customColors]="getCustomColor"
-                              [animations]="false">
+                              [animations]="animations"
+                              [labels]="labels"
+                              [trimLabels]="trimLabels">
           <ng-template #tooltipTemplate
-                       let-model="model">
-            {{model.value | number}}%
-          </ng-template>
+                       let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
       </div>
       <div class="kd-graph-title"
@@ -97,14 +97,14 @@ limitations under the License.
       <div fxLayout="column"
            fxLayoutAlign="center center">
         <ngx-charts-pie-chart [results]="resourcesRatio.podRatio"
-                              [view]="[200,200]"
+                              [view]="size"
                               [customColors]="getCustomColor"
-                              [animations]="false"
+                              [animations]="animations"
+                              [labels]="labels"
+                              [trimLabels]="trimLabels"
                               id="kd-graph-pods">
           <ng-template #tooltipTemplate
-                       let-model="model">
-            {{model.value | number}}%
-          </ng-template>
+                       let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
       </div>
       <div class="kd-graph-title"
@@ -116,13 +116,13 @@ limitations under the License.
       <div fxLayout="column"
            fxLayoutAlign="center center">
         <ngx-charts-pie-chart [results]="resourcesRatio.replicaSetRatio"
-                              [view]="[200,200]"
+                              [view]="size"
                               [customColors]="getCustomColor"
-                              [animations]="false">
+                              [animations]="animations"
+                              [labels]="labels"
+                              [trimLabels]="trimLabels">
           <ng-template #tooltipTemplate
-                       let-model="model">
-            {{model.value | number}}%
-          </ng-template>
+                       let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
       </div>
       <div class="kd-graph-title"
@@ -134,13 +134,13 @@ limitations under the License.
       <div fxLayout="column"
            fxLayoutAlign="center center">
         <ngx-charts-pie-chart [results]="resourcesRatio.replicationControllerRatio"
-                              [view]="[200,200]"
+                              [view]="size"
                               [customColors]="getCustomColor"
-                              [animations]="false">
+                              [animations]="animations"
+                              [labels]="labels"
+                              [trimLabels]="trimLabels">
           <ng-template #tooltipTemplate
-                       let-model="model">
-            {{model.value | number}}%
-          </ng-template>
+                       let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
       </div>
       <div class="kd-graph-title"
@@ -152,13 +152,13 @@ limitations under the License.
       <div fxLayout="column"
            fxLayoutAlign="center center">
         <ngx-charts-pie-chart [results]="resourcesRatio.statefulSetRatio"
-                              [view]="[200,200]"
+                              [view]="size"
                               [customColors]="getCustomColor"
-                              [animations]="false">
+                              [animations]="animations"
+                              [labels]="labels"
+                              [trimLabels]="trimLabels">
           <ng-template #tooltipTemplate
-                       let-model="model">
-            {{model.value | number}}%
-          </ng-template>
+                       let-model="model"> {{ model.value | number }}% </ng-template>
         </ngx-charts-pie-chart>
       </div>
       <div class="kd-graph-title"

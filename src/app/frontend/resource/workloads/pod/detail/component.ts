@@ -14,22 +14,25 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {Container, PodDetail} from '@api/backendapi';
-import {Subscription} from 'rxjs/Subscription';
-
-import {ActionbarService, ResourceMeta} from '../../../../common/services/global/actionbar';
-import {NotificationsService} from '../../../../common/services/global/notifications';
-import {KdStateService} from '../../../../common/services/global/state';
-import {EndpointManager, Resource} from '../../../../common/services/resource/endpoint';
-import {NamespacedResourceService} from '../../../../common/services/resource/resource';
+import {Container, PodDetail} from '@api/root.api';
+import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
+import {NotificationsService} from '@common/services/global/notifications';
+import {KdStateService} from '@common/services/global/state';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
+import _ from 'lodash';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 @Component({
   selector: 'kd-pod-detail',
   templateUrl: './template.html',
+  styleUrls: ['style.scss'],
 })
 export class PodDetailComponent implements OnInit, OnDestroy {
-  private podSubscription_: Subscription;
   private readonly endpoint_ = EndpointManager.resource(Resource.pod, true);
+  private readonly unsubscribe_ = new Subject<void>();
+
   pod: PodDetail;
   isInitialized = false;
   eventListEndpoint: string;
@@ -40,7 +43,7 @@ export class PodDetailComponent implements OnInit, OnDestroy {
     private readonly actionbar_: ActionbarService,
     private readonly activatedRoute_: ActivatedRoute,
     private readonly kdState_: KdStateService,
-    private readonly notifications_: NotificationsService,
+    private readonly notifications_: NotificationsService
   ) {}
 
   ngOnInit(): void {
@@ -50,8 +53,9 @@ export class PodDetailComponent implements OnInit, OnDestroy {
     this.eventListEndpoint = this.endpoint_.child(resourceName, Resource.event, resourceNamespace);
     this.pvcListEndpoint = this.endpoint_.child(resourceName, Resource.persistentVolumeClaim, resourceNamespace);
 
-    this.podSubscription_ = this.pod_
+    this.pod_
       .get(this.endpoint_.detail(), resourceName, resourceNamespace)
+      .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: PodDetail) => {
         this.pod = d;
         this.notifications_.pushErrors(d.errors);
@@ -61,8 +65,13 @@ export class PodDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.podSubscription_.unsubscribe();
+    this.unsubscribe_.next();
+    this.unsubscribe_.complete();
     this.actionbar_.onDetailsLeave.emit();
+  }
+
+  hasSecurityContext(): boolean {
+    return this.pod && !_.isEmpty(this.pod.securityContext);
   }
 
   getNodeHref(name: string): string {
@@ -71,5 +80,9 @@ export class PodDetailComponent implements OnInit, OnDestroy {
 
   getContainerName(_: number, container: Container): string {
     return container.name;
+  }
+
+  getObjectHref(type: string, name: string): string {
+    return this.kdState_.href(type, name, this.pod.objectMeta.namespace);
   }
 }

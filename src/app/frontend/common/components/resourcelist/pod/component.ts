@@ -14,15 +14,15 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {Event, Metric, Pod, PodList} from '@api/backendapi';
-import {Observable} from 'rxjs/Observable';
-
-import {ResourceListWithStatuses} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {NamespacedResourceService} from '../../../services/resource/resource';
+import {Event, Metric, Pod, PodList} from '@api/root.api';
+import {Observable} from 'rxjs';
+import {ResourceListWithStatuses} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+import {Status} from '../statuses';
 
 @Component({
   selector: 'kd-pod-list',
@@ -37,16 +37,20 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   constructor(
     private readonly podList: NamespacedResourceService<PodList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('pod', notifications, cdr);
     this.id = ListIdentifier.pod;
     this.groupId = ListGroupIdentifier.workloads;
 
     // Register status icon handlers
-    this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState);
-    this.registerBinding(this.icon.timelapse, 'kd-muted', this.isInPendingState);
-    this.registerBinding(this.icon.error, 'kd-error', this.isInErrorState);
+    this.registerBinding('kd-success', r => r.status === Status.Running, Status.Running);
+    this.registerBinding('kd-success', r => r.status === Status.Succeeded, Status.Succeeded);
+    this.registerBinding('kd-success', r => r.status === Status.Completed, Status.Completed);
+    this.registerBinding('kd-warning', r => r.status === Status.Pending, Status.Pending);
+    this.registerBinding('kd-warning', r => r.status === Status.ContainerCreating, Status.ContainerCreating);
+    this.registerBinding('kd-muted', r => r.status === Status.Terminating, Status.Terminating);
+    this.registerBinding('kd-error', this.isInErrorState, 'Error');
 
     // Register action columns.
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);
@@ -65,23 +69,13 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   }
 
   isInErrorState(resource: Pod): boolean {
-    return resource.podStatus.status === 'Failed';
-  }
-
-  isInPendingState(resource: Pod): boolean {
-    return resource.podStatus.status === 'Pending';
-  }
-
-  isInSuccessState(resource: Pod): boolean {
-    return resource.podStatus.status === 'Succeeded' || resource.podStatus.status === 'Running';
-  }
-
-  protected getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'labels', 'node', 'status', 'restarts', 'cpu', 'mem', 'created'];
-  }
-
-  private shouldShowNamespaceColumn_(): boolean {
-    return this.namespaceService_.areMultipleNamespacesSelected();
+    return (
+      [Status.Failed, Status.Error].some(s => resource.status === s) ||
+      (resource.warnings.length > 0 &&
+        ![Status.Pending, Status.NotReady, Status.Terminating, Status.Unknown, Status.ContainerCreating].some(
+          s => resource.status === s
+        ))
+    );
   }
 
   hasErrors(pod: Pod): boolean {
@@ -93,43 +87,14 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   }
 
   getDisplayStatus(pod: Pod): string {
-    // See kubectl printers.go for logic in kubectl:
-    // https://github.com/kubernetes/kubernetes/blob/39857f486511bd8db81868185674e8b674b1aeb9/pkg/printers/internalversion/printers.go
-    let msgState = 'running';
-    let reason = undefined;
+    return pod.status;
+  }
 
-    // Init container statuses are currently not taken into account.
-    // However, init containers with errors will still show as failed because of warnings.
-    if (pod.podStatus.containerStates) {
-      // Container states array may be null when no containers have started yet.
-      for (let i = pod.podStatus.containerStates.length - 1; i >= 0; i--) {
-        const state = pod.podStatus.containerStates[i];
-        if (state.waiting) {
-          msgState = 'waiting';
-          reason = state.waiting.reason;
-        }
-        if (state.terminated) {
-          msgState = 'terminated';
-          reason = state.terminated.reason;
-          if (!reason) {
-            if (state.terminated.signal) {
-              reason = `Signal:${state.terminated.signal}`;
-            } else {
-              reason = `ExitCode:${state.terminated.exitCode}`;
-            }
-          }
-        }
-      }
-    }
+  protected getDisplayColumns(): string[] {
+    return ['statusicon', 'name', 'images', 'labels', 'node', 'status', 'restarts', 'cpu', 'mem', 'created'];
+  }
 
-    if (msgState === 'waiting') {
-      return `Waiting: ${reason}`;
-    }
-
-    if (msgState === 'terminated') {
-      return `Terminated: ${reason}`;
-    }
-
-    return pod.podStatus.podPhase;
+  private shouldShowNamespaceColumn_(): boolean {
+    return this.namespaceService_.areMultipleNamespacesSelected();
   }
 }

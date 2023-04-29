@@ -14,13 +14,13 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {ClusterRole, ClusterRoleList} from '@api/backendapi';
-import {Observable} from 'rxjs/Observable';
+import {ClusterRole, ClusterRoleList} from '@api/root.api';
+import {Observable} from 'rxjs';
 
-import {ResourceListBase} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {ResourceService} from '../../../services/resource/resource';
+import {ResourceListBase} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {ResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
@@ -35,7 +35,7 @@ export class ClusterRoleListComponent extends ResourceListBase<ClusterRoleList, 
   constructor(
     private readonly clusterRole_: ResourceService<ClusterRoleList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('clusterrole', notifications, cdr);
     this.id = ListIdentifier.clusterRole;

@@ -23,7 +23,7 @@ limitations under the License.
        fxLayout="row"
        i18n>Nodes</div>
   <div description><span class="kd-muted-light"
-          i18n>Items:&nbsp;</span>{{totalItems}}</div>
+          i18n>Items:&nbsp;</span>{{ totalItems }}</div>
   <div actions>
     <kd-card-list-filter></kd-card-list-filter>
   </div>
@@ -36,14 +36,15 @@ limitations under the License.
     <mat-table [dataSource]="getData()"
                [trackBy]="trackByResource"
                matSort
-               [matSortActive]="getColumns()[8]"
+               [matSortActive]="getColumns()[11]"
                matSortDisableClear
                matSortDirection="asc">
       <ng-container [matColumnDef]="getColumns()[0]">
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
         <mat-cell *matCellDef="let node">
-          <mat-icon [ngClass]="getStatus(node).iconClass">
-            {{getStatus(node).iconName}}
+          <mat-icon [ngClass]="getStatus(node).iconClass"
+                    [matTooltip]="getStatus(node).iconTooltip">
+            {{ getStatus(node).iconName }}
           </mat-icon>
         </mat-cell>
       </ng-container>
@@ -52,67 +53,117 @@ limitations under the License.
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header
                          disableClear="true"
+                         class="col-stretch-xl"
                          i18n>Name</mat-header-cell>
-        <mat-cell *matCellDef="let node">
+        <mat-cell *matCellDef="let node"
+                  class="col-stretch-xl">
           <a [routerLink]="getDetailsHref(node.objectMeta.name)"
              queryParamsHandling="preserve">
-            {{node.objectMeta.name}}
+            {{ node.objectMeta.name }}
           </a>
         </mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[2]">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-xl"
                          i18n>Labels</mat-header-cell>
-        <mat-cell *matCellDef="let node">
+        <mat-cell *matCellDef="let node"
+                  class="col-stretch-xl">
           <kd-chips [map]="node.objectMeta.labels"></kd-chips>
         </mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[3]">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-s"
                          i18n>Ready</mat-header-cell>
-        <mat-cell *matCellDef="let node">{{node.ready}}</mat-cell>
+        <mat-cell *matCellDef="let node"
+                  class="col-stretch-s">{{ node.ready }}</mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[4]">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-m"
                          i18n>CPU requests (cores)</mat-header-cell>
-        <mat-cell *matCellDef="let node">
-          {{node.allocatedResources.cpuRequests | kdCores}} ({{node.allocatedResources.cpuRequestsFraction | number:"1.2-2"}}%)
+        <mat-cell *matCellDef="let node"
+                  class="col-stretch-m">
+          {{ node.allocatedResources.cpuRequests | kdCores }} ({{ node.allocatedResources.cpuRequestsFraction | number:
+          '1.2-2' }}%)
         </mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[5]">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-m"
                          i18n>CPU limits (cores)</mat-header-cell>
-        <mat-cell *matCellDef="let node">
-          {{node.allocatedResources.cpuLimits | kdCores}} ({{node.allocatedResources.cpuLimitsFraction | number:"1.2-2"}}%)
+        <mat-cell *matCellDef="let node"
+                  class="col-stretch-m">
+          {{ node.allocatedResources.cpuLimits | kdCores }} ({{ node.allocatedResources.cpuLimitsFraction | number:
+          '1.2-2' }}%)
         </mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[6]">
         <mat-header-cell *matHeaderCellDef
-                         i18n>Memory requests (bytes)</mat-header-cell>
-        <mat-cell *matCellDef="let node">
-          {{node.allocatedResources.memoryRequests | kdMemory}} ({{node.allocatedResources.memoryRequestsFraction | number:"1.2-2"}}%)
+                         class="col-stretch-m"
+                         i18n>CPU capacity (cores)</mat-header-cell>
+        <mat-cell *matCellDef="let node"
+                  class="col-stretch-m">
+          {{ node.allocatedResources.cpuCapacity | kdCores }}
         </mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[7]">
         <mat-header-cell *matHeaderCellDef
-                         i18n>Memory limits (bytes)</mat-header-cell>
-        <mat-cell *matCellDef="let node">
-          {{node.allocatedResources.memoryLimits | kdMemory}} ({{node.allocatedResources.memoryLimitsFraction | number:"1.2-2"}}%)
+                         class="col-stretch-m"
+                         i18n>Memory requests (bytes)</mat-header-cell>
+        <mat-cell *matCellDef="let node"
+                  class="col-stretch-m">
+          {{ node.allocatedResources.memoryRequests | kdMemory }} ({{ node.allocatedResources.memoryRequestsFraction |
+          number: '1.2-2' }}%)
         </mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[8]">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-m"
+                         i18n>Memory limits (bytes)</mat-header-cell>
+        <mat-cell *matCellDef="let node"
+                  class="col-stretch-m">
+          {{ node.allocatedResources.memoryLimits | kdMemory }} ({{ node.allocatedResources.memoryLimitsFraction |
+          number: '1.2-2' }}%)
+        </mat-cell>
+      </ng-container>
+
+      <ng-container [matColumnDef]="getColumns()[9]">
+        <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-m"
+                         i18n>Memory capacity (bytes)</mat-header-cell>
+        <mat-cell *matCellDef="let node"
+                  class="col-stretch-m">
+          {{ node.allocatedResources.memoryCapacity | kdMemory }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container [matColumnDef]="getColumns()[10]">
+        <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-m"
+                         i18n>Pods</mat-header-cell>
+        <mat-cell *matCellDef="let node"
+                  class="col-stretch-m">
+          {{ node.allocatedResources.allocatedPods }} ({{ node.allocatedResources.podFraction | number: '1.2-2' }}%)
+        </mat-cell>
+      </ng-container>
+
+      <ng-container [matColumnDef]="getColumns()[11]">
+        <mat-header-cell *matHeaderCellDef
                          mat-sort-header
                          disableClear="true"
+                         class="col-stretch-s"
                          i18n>Created</mat-header-cell>
-        <mat-cell *matCellDef="let node">
+        <mat-cell *matCellDef="let node"
+                  class="col-stretch-s">
           <kd-date [date]="node.objectMeta.creationTimestamp"
                    relative></kd-date>
         </mat-cell>
@@ -128,13 +179,15 @@ limitations under the License.
       </ng-container>
 
       <mat-header-row *matHeaderRowDef="getColumns()"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: getColumns();"></mat-row>
+      <mat-row *matRowDef="let row; columns: getColumns()"></mat-row>
     </mat-table>
 
-    <mat-paginator [length]="totalItems"
-                   [pageSize]="itemsPerPage"
-                   [hidePageSize]="true"
-                   [showFirstLastButtons]="true"></mat-paginator>
+    <div [hidden]="totalItems <= itemsPerPage">
+      <mat-paginator [length]="totalItems"
+                     [pageSize]="itemsPerPage"
+                     hidePageSize
+                     showFirstLastButtons></mat-paginator>
+    </div>
   </div>
 
   <div content

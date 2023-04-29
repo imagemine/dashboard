@@ -13,24 +13,24 @@
 // limitations under the License.
 
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
-import {Component, CUSTOM_ELEMENTS_SCHEMA, DebugElement} from '@angular/core';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {Component, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
+import {TestBed, waitForAsync} from '@angular/core/testing';
 import {MatCardModule} from '@angular/material/card';
 import {MatChipsModule} from '@angular/material/chips';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatIconModule} from '@angular/material/icon';
-import {MatTooltip, MatTooltipModule} from '@angular/material/tooltip';
+import {MatTooltipModule} from '@angular/material/tooltip';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {RouterModule} from '@angular/router';
-import {AppConfig, IngressDetail, ObjectMeta} from '@api/backendapi';
-import {CardComponent} from 'common/components/card/component';
-import {ChipsComponent} from 'common/components/chips/component';
-import {ObjectMetaComponent} from 'common/components/objectmeta/component';
-import {PropertyComponent} from 'common/components/property/component';
-import {PipesModule} from 'common/pipes/module';
-import {ConfigService} from 'common/services/global/config';
+import {AppConfig, IngressDetail} from '@api/root.api';
+import {CardComponent} from '@common/components/card/component';
+import {ObjectMetaComponent} from '@common/components/objectmeta/component';
+import {PropertyComponent} from '@common/components/property/component';
+import {PipesModule} from '@common/pipes/module';
+import {ConfigService} from '@common/services/global/config';
+import {MESSAGES, MESSAGES_DI_TOKEN} from '../../../../index.messages';
 
 import {IngressDetailComponent} from './component';
 
@@ -49,6 +49,48 @@ class MiniTestComponent {
     },
     typeMeta: {kind: 'Ingress'},
     errors: [],
+    endpoints: [],
+    spec: {
+      rules: [
+        {
+          http: {
+            paths: [
+              {
+                path: '/testpath',
+                pathType: 'Prefix',
+                backend: {
+                  service: {
+                    name: 'test',
+                    port: {
+                      number: 80,
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          host: 'foo.bar.com',
+          http: {
+            paths: [
+              {
+                path: '/bar',
+                pathType: 'Prefix',
+                backend: {
+                  service: {
+                    name: 'test',
+                    port: {
+                      name: 'a_port_name',
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ],
+    },
   };
 }
 
@@ -69,6 +111,49 @@ class MaxiTestComponent {
     },
     typeMeta: {kind: 'Ingress'},
     errors: [],
+    endpoints: [],
+    spec: {
+      rules: [
+        {
+          host: 'foox.bar.com',
+          http: {
+            paths: [
+              {
+                path: '/',
+                pathType: 'Prefix',
+                backend: {
+                  service: {
+                    name: 'service1',
+                    port: {
+                      number: 80,
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          host: 'barx.foo.com',
+          http: {
+            paths: [
+              {
+                path: '/',
+                pathType: 'Prefix',
+                backend: {
+                  service: {
+                    name: 'service2',
+                    port: {
+                      number: 80,
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ],
+    },
   };
 }
 
@@ -76,7 +161,7 @@ describe('IngressDetailComponent', () => {
   let httpMock: HttpTestingController;
   let configService: ConfigService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [
         ObjectMetaComponent,
@@ -84,11 +169,9 @@ describe('IngressDetailComponent', () => {
         MiniTestComponent,
         CardComponent,
         PropertyComponent,
-        ChipsComponent,
         IngressDetailComponent,
       ],
       imports: [
-        MatIconModule,
         MatCardModule,
         MatDividerModule,
         MatTooltipModule,
@@ -100,11 +183,11 @@ describe('IngressDetailComponent', () => {
         MatIconModule,
         RouterModule,
       ],
-      providers: [ConfigService],
+      providers: [ConfigService, {provide: MESSAGES_DI_TOKEN, useValue: MESSAGES}],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
-    httpMock = TestBed.get(HttpTestingController);
-    configService = TestBed.get(ConfigService);
+    httpMock = TestBed.inject(HttpTestingController);
+    configService = TestBed.inject(ConfigService);
   }));
 
   beforeEach(() => {
@@ -112,14 +195,10 @@ describe('IngressDetailComponent', () => {
     const configRequest = httpMock.expectOne('config');
     const config: AppConfig = {serverTime: new Date().getTime()};
     configRequest.flush(config);
-
-    // httpMock.verify();
   });
 
   it('shows a mini ingress', () => {
     const fixture = TestBed.createComponent(MiniTestComponent);
-    const component = fixture.componentInstance;
-
     fixture.detectChanges();
     const debugElement = fixture.debugElement.query(By.css('kd-property.object-meta-name div.kd-property-value div'));
     expect(debugElement).toBeTruthy();
@@ -130,8 +209,6 @@ describe('IngressDetailComponent', () => {
 
   it('shows a maxi ingress', () => {
     const fixture = TestBed.createComponent(MaxiTestComponent);
-    const component = fixture.componentInstance;
-
     fixture.detectChanges();
     const debugElement = fixture.debugElement.query(By.css('kd-property.object-meta-name div.kd-property-value div'));
     expect(debugElement).toBeTruthy();

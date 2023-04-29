@@ -108,10 +108,10 @@ type TokenManager interface {
 }
 
 // Authenticator represents authentication methods supported by Dashboard. Currently supported types are:
-//    - Token based - Any bearer token accepted by apiserver
-//	  - Basic - Username and password based authentication. Requires that apiserver has basic auth enabled also
-//    - Kubeconfig based - Authenticates user based on kubeconfig file. Only token/basic modes are supported within
-// 		the kubeconfig file.
+//   - Token based - Any bearer token accepted by apiserver
+//   - Basic - Username and password based authentication. Requires that apiserver has basic auth enabled also
+//   - Kubeconfig based - Authenticates user based on kubeconfig file. Only token/basic modes are supported within
+//     the kubeconfig file.
 type Authenticator interface {
 	// GetAuthInfo returns filled AuthInfo structure that can be used for K8S api client creation.
 	GetAuthInfo() (api.AuthInfo, error)
@@ -134,6 +134,8 @@ type LoginSpec struct {
 // AuthResponse is returned from our backend as a response for login/refresh requests. It contains generated JWEToken
 // and a list of non-critical errors such as 'Failed authentication'.
 type AuthResponse struct {
+	// Name is a user/subject name if available
+	Name string `json:"name,omitempty"`
 	// JWEToken is a token generated during login request that contains AuthInfo data in the payload.
 	JWEToken string `json:"jweToken"`
 	// Errors are a list of non-critical errors that happened during login request.

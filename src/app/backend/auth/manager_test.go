@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	restful "github.com/emicklei/go-restful"
+	restful "github.com/emicklei/go-restful/v3"
 
 	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
 	"github.com/kubernetes/dashboard/src/app/backend/client"
@@ -82,8 +82,8 @@ func (self *fakeClientManager) CSRFKey() string {
 	return ""
 }
 
-func (self *fakeClientManager) HasAccess(authInfo api.AuthInfo) error {
-	return self.HasAccessError
+func (self *fakeClientManager) HasAccess(authInfo api.AuthInfo) (string, error) {
+	return "", self.HasAccessError
 }
 
 func (self *fakeClientManager) VerberClient(req *restful.Request, config *rest.Config) (clientapi.ResourceVerber, error) {

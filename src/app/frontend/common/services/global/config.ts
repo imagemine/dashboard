@@ -14,10 +14,10 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {AppConfig} from '@api/backendapi';
-import {VersionInfo} from '@api/frontendapi';
-import {Observable} from 'rxjs/Observable';
-import {version} from '../../../environments/version';
+import {AppConfig} from '@api/root.api';
+import {VersionInfo} from '@api/root.ui';
+import {Observable} from 'rxjs';
+import {version} from '@environments/version';
 
 @Injectable()
 export class ConfigService {

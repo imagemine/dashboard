@@ -15,21 +15,27 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {MatTableDataSource} from '@angular/material/table';
 import {ActivatedRoute} from '@angular/router';
-import {CapacityItem, PersistentVolumeDetail} from '@api/backendapi';
-import {Subscription} from 'rxjs/Subscription';
+import {CapacityItem, PersistentVolumeDetail} from '@api/root.api';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
-import {ActionbarService, ResourceMeta} from '../../../../common/services/global/actionbar';
-import {NotificationsService} from '../../../../common/services/global/notifications';
-import {EndpointManager, Resource} from '../../../../common/services/resource/endpoint';
-import {ResourceService} from '../../../../common/services/resource/resource';
+import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {ResourceService} from '@common/services/resource/resource';
+import {KdStateService} from '@common/services/global/state';
+import {GlobalServicesModule} from '@common/services/global/module';
 
 @Component({
   selector: 'kd-persistent-volume-detail',
   templateUrl: './template.html',
 })
 export class PersistentVolumeDetailComponent implements OnInit, OnDestroy {
-  private persistentVolumeSubscription_: Subscription;
   private readonly endpoint_ = EndpointManager.resource(Resource.persistentVolume);
+  private readonly unsubscribe_ = new Subject<void>();
+
+  private readonly kdState_: KdStateService = GlobalServicesModule.injector.get(KdStateService);
+
   persistentVolume: PersistentVolumeDetail;
   isInitialized = false;
 
@@ -37,14 +43,15 @@ export class PersistentVolumeDetailComponent implements OnInit, OnDestroy {
     private readonly persistentVolume_: ResourceService<PersistentVolumeDetail>,
     private readonly actionbar_: ActionbarService,
     private readonly activatedRoute_: ActivatedRoute,
-    private readonly notifications_: NotificationsService,
+    private readonly notifications_: NotificationsService
   ) {}
 
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
 
-    this.persistentVolumeSubscription_ = this.persistentVolume_
+    this.persistentVolume_
       .get(this.endpoint_.detail(), resourceName)
+      .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: PersistentVolumeDetail) => {
         this.persistentVolume = d;
         this.notifications_.pushErrors(d.errors);
@@ -54,7 +61,8 @@ export class PersistentVolumeDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.persistentVolumeSubscription_.unsubscribe();
+    this.unsubscribe_.next();
+    this.unsubscribe_.complete();
     this.actionbar_.onDetailsLeave.emit();
   }
 
@@ -63,24 +71,35 @@ export class PersistentVolumeDetailComponent implements OnInit, OnDestroy {
   }
 
   getCapacityDataSource(): MatTableDataSource<CapacityItem> {
-    const data: CapacityItem[] = [];
+    const tableData = new MatTableDataSource<CapacityItem>();
 
-    if (this.isInitialized) {
-      for (const rName of Array.from<string>(Object.keys(this.persistentVolume.capacity))) {
-        data.push({
-          resourceName: rName,
-          quantity: this.persistentVolume.capacity[rName],
-        });
-      }
+    if (!this.isInitialized) {
+      return tableData;
     }
 
-    const tableData = new MatTableDataSource<CapacityItem>();
-    tableData.data = data;
+    tableData.data = Object.keys(this.persistentVolume.capacity).map(
+      key =>
+        ({
+          resourceName: key,
+          quantity: this.persistentVolume.capacity[key],
+        } as CapacityItem)
+    );
 
     return tableData;
   }
 
   trackByCapacityItemName(_: number, item: CapacityItem): any {
     return item.resourceName;
+  }
+
+  getClaimHref(claimReference: string): string {
+    let href = '';
+
+    const splittedRef = claimReference.split('/');
+    if (splittedRef.length === 2) {
+      href = this.kdState_.href('persistentvolumeclaim', splittedRef[1], splittedRef[0]);
+    }
+
+    return href;
   }
 }

@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {DecimalPipe} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {FilterByPipe} from '@common/pipes/filterby';
+import {UntrimPipe} from '@common/pipes/untrim';
 
 import {CommaSeparatedPipe} from './commaseparated';
 import {CoreFormatter} from './coreformatter';
 import {MemoryFormatter} from './memoryformatter';
 import {RelativeTimeFormatter} from './relativetime';
-import {SafeHtmlFormatter} from './safehtml';
+import {StripAnsiPipe} from './stripansi';
 import {TrimPipe} from './trim';
 
 @NgModule({
@@ -26,10 +29,22 @@ import {TrimPipe} from './trim';
     MemoryFormatter,
     CoreFormatter,
     RelativeTimeFormatter,
-    SafeHtmlFormatter,
+    StripAnsiPipe,
     TrimPipe,
     CommaSeparatedPipe,
+    FilterByPipe,
+    UntrimPipe,
   ],
-  exports: [MemoryFormatter, CoreFormatter, RelativeTimeFormatter, SafeHtmlFormatter, TrimPipe, CommaSeparatedPipe],
+  providers: [DecimalPipe],
+  exports: [
+    MemoryFormatter,
+    CoreFormatter,
+    RelativeTimeFormatter,
+    StripAnsiPipe,
+    TrimPipe,
+    CommaSeparatedPipe,
+    FilterByPipe,
+    UntrimPipe,
+  ],
 })
 export class PipesModule {}

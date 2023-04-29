@@ -14,31 +14,33 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {ServiceDetail} from '@api/backendapi';
-import {Subscription} from 'rxjs/Subscription';
-
-import {ActionbarService, ResourceMeta} from '../../../../common/services/global/actionbar';
-import {NotificationsService} from '../../../../common/services/global/notifications';
-import {EndpointManager, Resource} from '../../../../common/services/resource/endpoint';
-import {NamespacedResourceService} from '../../../../common/services/resource/resource';
+import {ServiceDetail} from '@api/root.api';
+import {ActionbarService, ResourceMeta} from '@common/services/global/actionbar';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 @Component({
   selector: 'kd-service-detail',
   templateUrl: './template.html',
 })
 export class ServiceDetailComponent implements OnInit, OnDestroy {
-  private serviceSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.service, true);
   service: ServiceDetail;
   isInitialized = false;
   podListEndpoint: string;
+  ingressListEndpoint: string;
   eventListEndpoint: string;
+
+  private readonly endpoint_ = EndpointManager.resource(Resource.service, true);
+  private readonly unsubscribe_ = new Subject<void>();
 
   constructor(
     private readonly service_: NamespacedResourceService<ServiceDetail>,
     private readonly actionbar_: ActionbarService,
     private readonly activatedRoute_: ActivatedRoute,
-    private readonly notifications_: NotificationsService,
+    private readonly notifications_: NotificationsService
   ) {}
 
   ngOnInit(): void {
@@ -46,10 +48,12 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace;
 
     this.podListEndpoint = this.endpoint_.child(resourceName, Resource.pod, resourceNamespace);
+    this.ingressListEndpoint = this.endpoint_.child(resourceName, Resource.ingress, resourceNamespace);
     this.eventListEndpoint = this.endpoint_.child(resourceName, Resource.event, resourceNamespace);
 
-    this.serviceSubscription_ = this.service_
+    this.service_
       .get(this.endpoint_.detail(), resourceName, resourceNamespace)
+      .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: ServiceDetail) => {
         this.service = d;
         this.notifications_.pushErrors(d.errors);
@@ -59,7 +63,8 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.serviceSubscription_.unsubscribe();
+    this.unsubscribe_.next();
+    this.unsubscribe_.complete();
     this.actionbar_.onDetailsLeave.emit();
   }
 }

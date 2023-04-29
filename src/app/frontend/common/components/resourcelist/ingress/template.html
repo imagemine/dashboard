@@ -20,7 +20,7 @@ limitations under the License.
        fxLayout="row"
        i18n>Ingresses</div>
   <div description><span class="kd-muted-light"
-          i18n>Items:&nbsp;</span>{{totalItems}}</div>
+          i18n>Items:&nbsp;</span>{{ totalItems }}</div>
   <div actions>
     <kd-card-list-filter></kd-card-list-filter>
   </div>
@@ -40,11 +40,13 @@ limitations under the License.
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header
                          disableClear="true"
+                         class="col-stretch-xl"
                          i18n>Name</mat-header-cell>
-        <mat-cell *matCellDef="let ingress">
+        <mat-cell *matCellDef="let ingress"
+                  class="col-stretch-xl">
           <a [routerLink]="getDetailsHref(ingress.objectMeta.name, ingress.objectMeta.namespace)"
              queryParamsHandling="preserve">
-            {{ingress.objectMeta.name}}
+            {{ ingress.objectMeta.name }}
           </a>
         </mat-cell>
       </ng-container>
@@ -52,23 +54,57 @@ limitations under the License.
       <ng-container *ngIf="shouldShowColumn('namespace')"
                     matColumnDef="namespace">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-l col-min-90"
                          i18n>Namespace</mat-header-cell>
-        <mat-cell *matCellDef="let ingress">{{ingress.objectMeta.namespace}}</mat-cell>
+        <mat-cell *matCellDef="let ingress"
+                  class="col-stretch-l col-min-90">{{ ingress.objectMeta.namespace }}</mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="labels">
         <mat-header-cell *matHeaderCellDef
+                         class="col-stretch-xl"
                          i18n>Labels</mat-header-cell>
-        <mat-cell *matCellDef="let ingress">
+        <mat-cell *matCellDef="let ingress"
+                  class="col-stretch-xl">
           <kd-chips [map]="ingress.objectMeta.labels"></kd-chips>
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="endpoints">
         <mat-header-cell *matHeaderCellDef
-                         i18n>Endpoints</mat-header-cell>
-        <mat-cell *matCellDef="let ingress">
-          <kd-external-endpoint [endpoints]="ingress.endpoints"></kd-external-endpoint>
+                         class="col-stretch-l"
+                         i18n>
+          Endpoints
+          <mat-icon class="external-link-icon kd-clickable"
+                    i18n-matTooltip
+                    matTooltip="Endpoint links are external links that will be open in a new tab.">open_in_new</mat-icon>
+        </mat-header-cell>
+        <mat-cell *matCellDef="let ingress"
+                  class="col-stretch-l">
+          <kd-external-endpoint [endpoints]="ingress.endpoints"
+                                [hideExternalIcon]="true"></kd-external-endpoint>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="hosts">
+        <mat-header-cell *matHeaderCellDef
+                         disableClear="true"
+                         class="col-stretch-xl"
+                         i18n>
+          Hosts
+          <mat-icon class="external-link-icon kd-clickable"
+                    i18n-matTooltip
+                    matTooltip="Host links are external links that will be open in a new tab.">open_in_new</mat-icon>
+        </mat-header-cell>
+        <mat-cell *matCellDef="let ingress"
+                  class="col-stretch-xl">
+          <div *ngFor="let host of ingress?.hosts"
+               class="kd-ellipsised">
+            <a href="https://{{ host }}"
+               target="_blank"> {{ host }} </a>
+          </div>
+
+          <div *ngIf="ingress?.hosts?.length === 0">-</div>
         </mat-cell>
       </ng-container>
 
@@ -76,8 +112,10 @@ limitations under the License.
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header
                          disableClear="true"
+                         class="col-stretch-m"
                          i18n>Created</mat-header-cell>
-        <mat-cell *matCellDef="let ingress">
+        <mat-cell *matCellDef="let ingress"
+                  class="col-stretch-m">
           <kd-date [date]="ingress.objectMeta.creationTimestamp"
                    relative></kd-date>
         </mat-cell>
@@ -93,13 +131,15 @@ limitations under the License.
       </ng-container>
 
       <mat-header-row *matHeaderRowDef="getColumns()"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: getColumns();"></mat-row>
+      <mat-row *matRowDef="let row; columns: getColumns()"></mat-row>
     </mat-table>
 
-    <mat-paginator [length]="totalItems"
-                   [pageSize]="itemsPerPage"
-                   [hidePageSize]="true"
-                   [showFirstLastButtons]="true"></mat-paginator>
+    <div [hidden]="totalItems <= itemsPerPage">
+      <mat-paginator [length]="totalItems"
+                     [pageSize]="itemsPerPage"
+                     hidePageSize
+                     showFirstLastButtons></mat-paginator>
+    </div>
   </div>
 
   <div content

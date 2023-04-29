@@ -14,7 +14,7 @@
 
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {CUSTOM_ELEMENTS_SCHEMA, InjectionToken} from '@angular/core';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatRadioModule} from '@angular/material/radio';
@@ -22,25 +22,25 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {ActivatedRoute, Router} from '@angular/router';
 import {RouterTestingModule} from '@angular/router/testing';
-import {EnabledAuthenticationModes, LoginSkippableResponse, LoginSpec} from '@api/backendapi';
-import {Config, CONFIG_DI_TOKEN} from '../index.config';
-import {K8SError, KdError} from 'common/errors/errors';
-import {AuthService} from 'common/services/global/authentication';
-import {from, Observable, of} from 'rxjs';
+import {EnabledAuthenticationModes, LoginSkippableResponse, LoginSpec} from '@api/root.api';
+import {IConfig, PluginMetadata} from '@api/root.ui';
+import {K8SError, KdError} from '@common/errors/errors';
+import {AuthService} from '@common/services/global/authentication';
+import {HistoryService} from '@common/services/global/history';
+import {PluginsConfigService} from '@common/services/global/plugin';
+import {from, Observable, of, throwError} from 'rxjs';
+import {CONFIG_DI_TOKEN} from '../index.config';
 import {LoginComponent} from './component';
-import {PluginsConfigService} from '../common/services/global/plugin';
-import {PluginMetadata} from '@api/frontendapi';
 
 const queries = {
   submitButton: '.kd-login-button[type="submit"]',
   skipButton: '.kd-login-button:not([type="submit"])',
   errorText: '.kd-error-text',
-  usernameId: '#username',
-  passwordId: '#password',
+  token: '#token',
 };
-const username = 'kubedude';
-const password = 'supersecret';
-const MOCK_CONFIG_DI_TOKEN = new InjectionToken<Config>('kd.config');
+const loginToken =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+const MOCK_CONFIG_DI_TOKEN = new InjectionToken<IConfig>('kd.config');
 
 class MockAuthService {
   login(loginSpec: LoginSpec): Observable<K8SError[]> {
@@ -58,8 +58,8 @@ class MockAuthService {
       },
     ];
 
-    // fake an error if password isn't what we expect.
-    if (loginSpec && loginSpec.password === password) {
+    // fake an error if token isn't what we expect.
+    if (loginSpec && loginSpec.token === loginToken) {
       return of([]);
     }
     return of(errors);
@@ -77,14 +77,27 @@ class MockRouter {
 }
 
 class MockPluginsConfigService {
-  init(): void {}
-  refreshConfig(): void {}
   static pluginsMetadata(): PluginMetadata[] {
     return [];
   }
+
   static status(): number {
     return 200;
   }
+
+  init(): void {}
+
+  refreshConfig(): void {}
+}
+
+class MockHistoryService {
+  router_: MockRouter;
+
+  init(): void {}
+
+  pushState(): void {}
+
+  goToPreviousState(): void {}
 }
 
 describe('LoginComponent', () => {
@@ -92,7 +105,7 @@ describe('LoginComponent', () => {
   let fixture: ComponentFixture<LoginComponent>;
   let httpTestingController: HttpTestingController;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [LoginComponent],
       imports: [
@@ -130,6 +143,10 @@ describe('LoginComponent', () => {
           provide: CONFIG_DI_TOKEN,
           useValue: MOCK_CONFIG_DI_TOKEN,
         },
+        {
+          provide: HistoryService,
+          useClass: MockHistoryService,
+        },
       ],
     }).compileComponents();
   }));
@@ -137,7 +154,7 @@ describe('LoginComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
-    httpTestingController = TestBed.get(HttpTestingController);
+    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
   describe('initialization', () => {
@@ -177,8 +194,8 @@ describe('LoginComponent', () => {
 
     it('renders user and password inputs if selectedAuthenticationMode === basic', async () => {
       await setSelectedAuthenticationMode('basic');
-      expect(fixture.debugElement.query(By.css(queries.usernameId))).toBeTruthy();
-      expect(fixture.debugElement.query(By.css(queries.passwordId))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('#username'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('#password'))).toBeTruthy();
     });
 
     it('renders kd-upload-file if selectedAuthenticationMode === kubeconfig', async () => {
@@ -190,31 +207,34 @@ describe('LoginComponent', () => {
   describe('login', () => {
     it('calls AuthService.login with correct spec and redirects to overview', async () => {
       // setups spies in services
-      const loginSpy = spyOn(TestBed.get(AuthService), 'login').and.callThrough();
-      const navigateSpy = spyOn(TestBed.get(Router), 'navigate').and.callThrough();
+      const loginSpy = jest.spyOn(TestBed.inject(AuthService), 'login');
+      const goToPreviousStateSpy = jest.spyOn(TestBed.inject(HistoryService), 'goToPreviousState');
 
-      await setSelectedAuthenticationMode('basic');
+      await setSelectedAuthenticationMode('token');
 
       // set inputs and fire change events to trigger onChange()
-      const usernameInput = fixture.debugElement.query(By.css(queries.usernameId)).nativeElement;
-      const passwordInput = fixture.debugElement.query(By.css(queries.passwordId)).nativeElement;
-      usernameInput.value = username;
-      passwordInput.value = password;
-      usernameInput.dispatchEvent(new Event('change'));
-      passwordInput.dispatchEvent(new Event('change'));
+      const token = fixture.debugElement.query(By.css(queries.token)).nativeElement;
+      token.value = loginToken;
+      token.dispatchEvent(new Event('change'));
 
       submit();
 
-      expect(loginSpy).toHaveBeenCalledWith({username, password});
-      expect(navigateSpy).toHaveBeenCalledWith(['overview']);
+      expect(loginSpy).toHaveBeenCalledWith({token: loginToken} as LoginSpec);
+      expect(goToPreviousStateSpy).toHaveBeenCalledWith('workloads');
     });
 
     it('calls AuthService.login, does not redirect, and renders errors if login fails', async () => {
       // setups spies in services
-      const loginSpy = spyOn(TestBed.get(AuthService), 'login').and.callThrough();
-      const navigateSpy = spyOn(TestBed.get(Router), 'navigate').and.callThrough();
+      const err = {status: 401, error: 'Unauthorized (401): Invalid credentials provided'};
+      const loginSpy = jest.spyOn(TestBed.inject(AuthService), 'login').mockReturnValue(throwError(err));
+      const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate');
 
-      await setSelectedAuthenticationMode('basic');
+      await setSelectedAuthenticationMode('token');
+
+      // set inputs and fire change events to trigger onChange()
+      const token = fixture.debugElement.query(By.css(queries.token)).nativeElement;
+      token.value = loginToken;
+      token.dispatchEvent(new Event('change'));
 
       submit();
 
@@ -230,8 +250,8 @@ describe('LoginComponent', () => {
       fixture.debugElement.query(By.css(queries.skipButton)).nativeElement.click();
 
       // setups spies in services
-      const skipLoginPageSpy = spyOn(TestBed.get(AuthService), 'skipLoginPage').and.callThrough();
-      const navigateSpy = spyOn(TestBed.get(Router), 'navigate').and.callThrough();
+      const skipLoginPageSpy = jest.spyOn(TestBed.inject(AuthService), 'skipLoginPage');
+      const goToPreviousStateSpy = jest.spyOn(TestBed.inject(HistoryService), 'goToPreviousState');
 
       await setSelectedAuthenticationMode('basic');
 
@@ -239,7 +259,7 @@ describe('LoginComponent', () => {
       fixture.detectChanges();
 
       expect(skipLoginPageSpy).toHaveBeenCalledWith(true);
-      expect(navigateSpy).toHaveBeenCalledWith(['overview']);
+      expect(goToPreviousStateSpy).toHaveBeenCalledWith('workloads');
     });
   });
 

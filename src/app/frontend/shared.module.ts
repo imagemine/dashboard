@@ -16,6 +16,7 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FlexLayoutModule} from '@angular/flex-layout';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatButtonModule} from '@angular/material/button';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatCardModule} from '@angular/material/card';
@@ -27,6 +28,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
+import {MatListModule} from '@angular/material/list';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
@@ -43,12 +45,12 @@ import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipModule} from '@angular/material/tooltip';
 import {RouterModule} from '@angular/router';
-import {InViewportModule} from 'ng-in-viewport';
-import {FilterPipeModule} from 'ngx-filter-pipe';
-
-import {PipesModule} from './common/pipes/module';
-import {KD_TOOLTIP_DEFAULT_OPTIONS} from './index.config';
 import {NgxChartsModule} from '@swimlane/ngx-charts';
+import {InViewportModule} from 'ng-in-viewport';
+import {NgPipesModule} from 'ngx-pipes';
+
+import {PipesModule} from '@common/pipes/module';
+import {KD_TOOLTIP_DEFAULT_OPTIONS} from './index.config';
 
 const SHARED_DEPENDENCIES = [
   // Angular imports
@@ -83,11 +85,13 @@ const SHARED_DEPENDENCIES = [
   MatSelectModule,
   MatButtonToggleModule,
   MatSnackBarModule,
+  MatAutocompleteModule,
+  MatListModule,
 
   // Other 3rd party modules
   FlexLayoutModule,
   RouterModule,
-  FilterPipeModule,
+  NgPipesModule,
   NgxChartsModule,
   InViewportModule,
 

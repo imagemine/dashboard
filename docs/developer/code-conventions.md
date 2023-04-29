@@ -17,34 +17,32 @@ Additionally, check the list of rules and tips, that we are using:
 
 An overview of the features provided by the dashboard can be found [here](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard).
 
-## Code style check and formatting
+## Code Style
 
 The code style check suite includes format checks can be executed with:
 
-```
-npm run check
+```shell
+make check
 ```
 
 The code formatting can be executed with:
 
-```
-npm run fix
+```shell
+make fix
 ```
 
 These check and formatting involves in go, ts, scss, html, license and i18n files.
 
 We use following tools and settings for each check and formatting:
 
-| code    | tools                                                                    | setting |
-|---------|--------------------------------------------------------------------------|---------|
-| go      | [golangci-lint](https://github.com/golangci/golangci-lint)               | [`.golangci.yml`](../../.golangci.yml) |
-| ts      | [gts](https://github.com/google/gts)                                     | [`tslint.json`](../../tslint.json) |
-| scss    | [sass-lint](https://github.com/sasstools/sass-lint)                      | [`.sass-lint.yml`](../../.sass-lint.yml) |
-| scss    | [scssfmt](https://github.com/morishitter/scssfmt)                        | - |
-| html    | [js-beautify](https://github.com/beautify-web/js-beautify)               | options in [`format.sh`](../../aio/scripts/format.sh) |
-| license | [licence-check-and-add](https://github.com/awjh/license-check-and-add)   | [`license-checker-config.json`](../../license-checker-config.json) and [`license-header.txt`](../../aio/scripts/license-header.txt) |
-| i18n    | [xi18n](https://angular.io/cli/xi18n)                                    | - |
-| i18n    | [xliffmerge](https://github.com/martinroob/ngx-i18nsupport)              | `xliffmergeOptions` in [`package.json`](../../package.json) |
+| code    | tools                                                                  | setting                                                                               |
+|---------|------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| go      | [golangci-lint](https://github.com/golangci/golangci-lint)             | [`.golangci.yml`](../../.golangci.yml)                                                |
+| ts      | [gts](https://github.com/google/gts)                                   | [`.eslintrc.yaml`](../../.eslintrc.yaml) and [`.prettierrc.js`](../../.prettierrc.js) |
+| scss    | [stylelint](https://github.com/stylelint/stylelint)                    | [`.stylelintrc.yaml`](../../.stylelintrc.yaml)                                        |
+| html    | [prettier](https://prettier.io/)                                       | [`.jsbeautifyrc`](../../.jsbeautifyrc)                                                |
+| license | [license-check-and-add](https://github.com/awjh/license-check-and-add) | [`license-checker-config.json`](../../license-checker-config.json)                    |
+| i18n    | [xliffmerge](https://github.com/martinroob/ngx-i18nsupport)            | `xliffmergeOptions` in [`package.json`](../../package.json)                           |
 
 ----
 _Copyright 2019 [The Kubernetes Dashboard Authors](https://github.com/kubernetes/dashboard/graphs/contributors)_

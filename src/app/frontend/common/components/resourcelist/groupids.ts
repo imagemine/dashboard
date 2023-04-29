@@ -14,10 +14,14 @@
 
 export enum ListIdentifier {
   clusterRole = 'clusterRoleList',
+  clusterRoleBinding = 'clusterRoleBindingList',
+  role = 'roleList',
+  roleBinding = 'roleBindingList',
   namespace = 'namespaceList',
   node = 'nodeList',
   persistentVolume = 'persistentVolumeList',
   storageClass = 'storageClassList',
+  ingressClass = 'ingressClassList',
   cronJob = 'cronJobList',
   crd = 'crdList',
   crdObject = 'crdObjectList',
@@ -30,6 +34,7 @@ export enum ListIdentifier {
   ingress = 'ingressList',
   service = 'serviceList',
   serviceAccount = 'serviceAccountList',
+  networkPolicy = 'networkPolicyList',
   configMap = 'configMapList',
   persistentVolumeClaim = 'persistentVolumeClaimList',
   secret = 'secretList',

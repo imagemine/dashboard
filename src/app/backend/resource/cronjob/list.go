@@ -17,14 +17,15 @@ package cronjob
 import (
 	"log"
 
+	batch "k8s.io/api/batch/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	client "k8s.io/client-go/kubernetes"
+
 	"github.com/kubernetes/dashboard/src/app/backend/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
 	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
-	"k8s.io/api/batch/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	client "k8s.io/client-go/kubernetes"
 )
 
 // CronJobList contains a list of CronJobs in the cluster.
@@ -48,6 +49,9 @@ type CronJob struct {
 	Suspend      *bool          `json:"suspend"`
 	Active       int            `json:"active"`
 	LastSchedule *metav1.Time   `json:"lastSchedule"`
+
+	// ContainerImages holds a list of the CronJob images.
+	ContainerImages []string `json:"containerImages"`
 }
 
 // GetCronJobList returns a list of all CronJobs in the cluster.
@@ -79,7 +83,7 @@ func GetCronJobListFromChannels(channels *common.ResourceChannels, dsQuery *data
 	return cronJobList, nil
 }
 
-func toCronJobList(cronJobs []v1beta1.CronJob, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery,
+func toCronJobList(cronJobs []batch.CronJob, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery,
 	metricClient metricapi.MetricClient) *CronJobList {
 
 	list := &CronJobList{
@@ -109,13 +113,14 @@ func toCronJobList(cronJobs []v1beta1.CronJob, nonCriticalErrors []error, dsQuer
 	return list
 }
 
-func toCronJob(cj *v1beta1.CronJob) CronJob {
+func toCronJob(cj *batch.CronJob) CronJob {
 	return CronJob{
-		ObjectMeta:   api.NewObjectMeta(cj.ObjectMeta),
-		TypeMeta:     api.NewTypeMeta(api.ResourceKindCronJob),
-		Schedule:     cj.Spec.Schedule,
-		Suspend:      cj.Spec.Suspend,
-		Active:       len(cj.Status.Active),
-		LastSchedule: cj.Status.LastScheduleTime,
+		ObjectMeta:      api.NewObjectMeta(cj.ObjectMeta),
+		TypeMeta:        api.NewTypeMeta(api.ResourceKindCronJob),
+		Schedule:        cj.Spec.Schedule,
+		Suspend:         cj.Spec.Suspend,
+		Active:          len(cj.Status.Active),
+		LastSchedule:    cj.Status.LastScheduleTime,
+		ContainerImages: getContainerImages(cj),
 	}
 }

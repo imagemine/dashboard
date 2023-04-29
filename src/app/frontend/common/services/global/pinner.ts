@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {Injectable} from '@angular/core';
-import {PinnedResource} from '@api/backendapi';
+import {PinnedResource} from '@api/root.api';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Subject} from 'rxjs';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
@@ -22,7 +22,7 @@ import {VerberService} from './verber';
 
 @Injectable()
 export class PinnerService {
-  onPinUpdate = new Subject();
+  onPinUpdate = new Subject<void>();
   private isInitialized_ = false;
   private pinnedResources_: PinnedResource[] = [];
   private readonly endpoint_ = 'api/v1/settings/pinner';
@@ -30,7 +30,7 @@ export class PinnerService {
   constructor(
     private readonly dialog_: MatDialog,
     private readonly http_: HttpClient,
-    private readonly verber_: VerberService,
+    private readonly verber_: VerberService
   ) {}
 
   init(): void {

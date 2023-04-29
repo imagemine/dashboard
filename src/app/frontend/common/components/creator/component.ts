@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {Component, Input} from '@angular/core';
-import {ResourceOwner} from '@api/backendapi';
+import {ResourceOwner} from '@api/root.api';
 import {KdStateService} from '../../services/global/state';
 
 @Component({
@@ -30,7 +30,7 @@ export class CreatorCardComponent {
     return this.kdState_.href(
       this.creator.typeMeta.kind,
       this.creator.objectMeta.name,
-      this.creator.objectMeta.namespace,
+      this.creator.objectMeta.namespace
     );
   }
 }

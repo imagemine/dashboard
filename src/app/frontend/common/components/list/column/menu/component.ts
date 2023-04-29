@@ -14,12 +14,12 @@
 
 import {Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
-import {ObjectMeta, TypeMeta} from '@api/backendapi';
-import {ActionColumn} from '@api/frontendapi';
-import {PinnerService} from '../../../../services/global/pinner';
-import {KdStateService} from '../../../../services/global/state';
-import {VerberService} from '../../../../services/global/verber';
-import {Resource} from '../../../../services/resource/endpoint';
+import {ObjectMeta, TypeMeta} from '@api/root.api';
+import {ActionColumn} from '@api/root.ui';
+import {PinnerService} from '@common/services/global/pinner';
+import {KdStateService} from '@common/services/global/state';
+import {VerberService} from '@common/services/global/verber';
+import {Resource} from '@common/services/resource/endpoint';
 
 const loggableResources: string[] = [
   Resource.daemonSet,
@@ -31,9 +31,7 @@ const loggableResources: string[] = [
 ];
 
 const pinnableResources: string[] = [Resource.crdFull];
-
 const executableResources: string[] = [Resource.pod];
-
 const triggerableResources: string[] = [Resource.cronJob];
 
 @Component({
@@ -50,7 +48,7 @@ export class MenuComponent implements ActionColumn {
     private readonly verber_: VerberService,
     private readonly router_: Router,
     private readonly kdState_: KdStateService,
-    private readonly pinner_: PinnerService,
+    private readonly pinner_: PinnerService
   ) {}
 
   setObjectMeta(objectMeta: ObjectMeta): void {
@@ -111,7 +109,7 @@ export class MenuComponent implements ActionColumn {
       this.objectMeta.name,
       this.objectMeta.namespace,
       this.displayName ? this.displayName : this.objectMeta.name,
-      this.namespaced,
+      this.namespaced
     );
   }
 
@@ -125,6 +123,14 @@ export class MenuComponent implements ActionColumn {
 
   onEdit(): void {
     this.verber_.showEditDialog(this.typeMeta.kind, this.typeMeta, this.objectMeta);
+  }
+
+  isRestartEnabled(): boolean {
+    return this.typeMeta.restartable;
+  }
+
+  onRestart(): void {
+    this.verber_.showRestartDialog(this.typeMeta.kind, this.typeMeta, this.objectMeta);
   }
 
   onDelete(): void {

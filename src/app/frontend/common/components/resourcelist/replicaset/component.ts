@@ -15,15 +15,16 @@
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {Event, Metric, ReplicaSet, ReplicaSetList} from '@api/backendapi';
-import {Observable} from 'rxjs/Observable';
+import {Event, Metric, ReplicaSet, ReplicaSetList} from '@api/root.api';
+import {Observable} from 'rxjs';
 
-import {ResourceListWithStatuses} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {NamespacedResourceService} from '../../../services/resource/resource';
+import {ResourceListWithStatuses} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {NamespacedResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+import {Status} from '../statuses';
 
 @Component({
   selector: 'kd-replica-set-list',
@@ -40,16 +41,24 @@ export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSet
     private readonly replicaSet_: NamespacedResourceService<ReplicaSetList>,
     private readonly activatedRoute_: ActivatedRoute,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('replicaset', notifications, cdr);
     this.id = ListIdentifier.replicaSet;
     this.groupId = ListGroupIdentifier.workloads;
 
     // Register status icon handlers
-    this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState);
-    this.registerBinding(this.icon.timelapse, 'kd-muted', this.isInPendingState);
-    this.registerBinding(this.icon.error, 'kd-error', this.isInErrorState);
+    this.registerBinding(
+      'kd-success',
+      r => r.podInfo.warnings.length === 0 && r.podInfo.pending === 0 && r.podInfo.running === r.podInfo.desired,
+      Status.Running
+    );
+    this.registerBinding(
+      'kd-muted',
+      r => r.podInfo.warnings.length === 0 && (r.podInfo.pending > 0 || r.podInfo.running !== r.podInfo.desired),
+      Status.Pending
+    );
+    this.registerBinding('kd-error', r => r.podInfo.warnings.length > 0, Status.Error);
 
     // Register action columns.
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);
@@ -67,27 +76,8 @@ export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSet
     return rsList.replicaSets;
   }
 
-  isInErrorState(resource: ReplicaSet): boolean {
-    return resource.podInfo.warnings.length > 0;
-  }
-
-  isInPendingState(resource: ReplicaSet): boolean {
-    return (
-      resource.podInfo.warnings.length === 0 &&
-      (resource.podInfo.pending > 0 || resource.podInfo.running !== resource.podInfo.desired)
-    );
-  }
-
-  isInSuccessState(resource: ReplicaSet): boolean {
-    return (
-      resource.podInfo.warnings.length === 0 &&
-      resource.podInfo.pending === 0 &&
-      resource.podInfo.running === resource.podInfo.desired
-    );
-  }
-
   protected getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'labels', 'pods', 'created', 'images'];
+    return ['statusicon', 'name', 'images', 'labels', 'pods', 'created'];
   }
 
   private shouldShowNamespaceColumn_(): boolean {

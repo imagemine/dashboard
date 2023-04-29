@@ -15,15 +15,16 @@
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Component, Inject, NgZone, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {AuthenticationMode, EnabledAuthenticationModes, LoginSkippableResponse, LoginSpec} from '@api/backendapi';
-import {KdError, KdFile, StateError} from '@api/frontendapi';
+import {AuthenticationMode, EnabledAuthenticationModes, LoginSkippableResponse, LoginSpec} from '@api/root.api';
+import {KdError} from '@api/root.shared';
+import {IConfig, KdFile, StateError} from '@api/root.ui';
+import {AsKdError, ErrorCode, ErrorStatus, K8SError} from '@common/errors/errors';
+import {AuthService} from '@common/services/global/authentication';
+import {HistoryService} from '@common/services/global/history';
+import {PluginsConfigService} from '@common/services/global/plugin';
 import {CookieService} from 'ngx-cookie-service';
 import {map} from 'rxjs/operators';
-
-import {Config, CONFIG_DI_TOKEN} from '../index.config';
-import {AsKdError, K8SError} from '../common/errors/errors';
-import {AuthService} from '../common/services/global/authentication';
-import {PluginsConfigService} from '../common/services/global/plugin';
+import {CONFIG_DI_TOKEN} from '../index.config';
 
 enum LoginModes {
   Kubeconfig = 'kubeconfig',
@@ -56,7 +57,8 @@ export class LoginComponent implements OnInit {
     private readonly ngZone_: NgZone,
     private readonly route_: ActivatedRoute,
     private readonly pluginConfigService_: PluginsConfigService,
-    @Inject(CONFIG_DI_TOKEN) private readonly CONFIG: Config,
+    private readonly historyService_: HistoryService,
+    @Inject(CONFIG_DI_TOKEN) private readonly CONFIG: IConfig
   ) {}
 
   ngOnInit(): void {
@@ -91,16 +93,18 @@ export class LoginComponent implements OnInit {
   }
 
   login(): void {
-    this.cookies_.set(
-      this.CONFIG.authModeCookieName,
-      this.selectedAuthenticationMode,
-      null,
-      null,
-      null,
-      false,
-      'Strict',
-    );
+    if (this.hasEmptyToken_()) {
+      this.errors = [
+        {
+          code: ErrorCode.badRequest,
+          status: ErrorStatus.badRequest,
+          message: 'Empty token provided',
+        } as KdError,
+      ];
+      return;
+    }
 
+    this.saveLastLoginMode_();
     this.authService_.login(this.getLoginSpec_()).subscribe(
       (errors: K8SError[]) => {
         if (errors.length > 0) {
@@ -109,19 +113,17 @@ export class LoginComponent implements OnInit {
         }
 
         this.pluginConfigService_.refreshConfig();
-        this.ngZone_.run(() => {
-          this.state_.navigate(['overview']);
-        });
+        this.ngZone_.run(_ => this.historyService_.goToPreviousState('workloads'));
       },
       (err: HttpErrorResponse) => {
         this.errors = [AsKdError(err)];
-      },
+      }
     );
   }
 
   skip(): void {
     this.authService_.skipLoginPage(true);
-    this.state_.navigate(['overview']);
+    this.historyService_.goToPreviousState('workloads');
   }
 
   isSkipButtonEnabled(): boolean {
@@ -138,7 +140,7 @@ export class LoginComponent implements OnInit {
         this.onFileLoad_(event as KdFile);
         break;
       case LoginModes.Token:
-        this.token_ = (event.target as HTMLInputElement).value;
+        this.token_ = (event.target as HTMLInputElement).value.trim();
         break;
       case LoginModes.Basic:
         if ((event.target as HTMLInputElement).id === 'username') {
@@ -149,6 +151,22 @@ export class LoginComponent implements OnInit {
         break;
       default:
     }
+  }
+
+  private hasEmptyToken_(): boolean {
+    return this.selectedAuthenticationMode === LoginModes.Token && (!this.token_ || !this.token_.trim());
+  }
+
+  private saveLastLoginMode_(): void {
+    this.cookies_.set(
+      this.CONFIG.authModeCookieName,
+      this.selectedAuthenticationMode,
+      null,
+      null,
+      null,
+      false,
+      'Strict'
+    );
   }
 
   private onFileLoad_(file: KdFile): void {

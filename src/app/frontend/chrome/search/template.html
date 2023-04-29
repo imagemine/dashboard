@@ -15,7 +15,7 @@ limitations under the License.
 -->
 
 <div class="kd-search"
-     fxFlex="50">
+     fxFlex>
   <form #form="ngForm"
         (ngSubmit)="submit(form)"
         fxFlex
@@ -30,7 +30,7 @@ limitations under the License.
            [(ngModel)]="query"
            minlength="1"
            required
-           fxFlex>
+           fxFlex />
   </form>
 </div>
 <div fxFlex></div>

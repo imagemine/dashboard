@@ -14,7 +14,7 @@
 
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {Component, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
-import {async, TestBed} from '@angular/core/testing';
+import {TestBed, waitForAsync} from '@angular/core/testing';
 import {MatCardModule} from '@angular/material/card';
 import {MatChipsModule} from '@angular/material/chips';
 import {MatDialogModule} from '@angular/material/dialog';
@@ -24,14 +24,13 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {RouterModule} from '@angular/router';
-import {AppConfig, K8sError, ServiceDetail} from '@api/backendapi';
-import {CardComponent} from 'common/components/card/component';
-import {ChipsComponent} from 'common/components/chips/component';
-import {ObjectMetaComponent} from 'common/components/objectmeta/component';
-import {PropertyComponent} from 'common/components/property/component';
-import {PipesModule} from 'common/pipes/module';
-import {ConfigService} from 'common/services/global/config';
-import {NamespacedResourceService} from 'common/services/resource/resource';
+import {AppConfig, K8sError, ServiceDetail} from '@api/root.api';
+import {CardComponent} from '@common/components/card/component';
+import {ObjectMetaComponent} from '@common/components/objectmeta/component';
+import {PropertyComponent} from '@common/components/property/component';
+import {PipesModule} from '@common/pipes/module';
+import {ConfigService} from '@common/services/global/config';
+import {MESSAGES, MESSAGES_DI_TOKEN} from '../../../../index.messages';
 
 import {ServiceDetailComponent} from './component';
 
@@ -72,12 +71,9 @@ class MaxiTestComponent {
     podList: {
       pods: [
         {
-          podStatus: {
-            podPhase: 'phase1',
-            status: 'Ready',
-            containerStates: [{waiting: {reason: 'Still starting'}}],
-          },
+          status: 'Running',
           restartCount: 1,
+          containerImages: [],
           metrics: {
             cpuUsage: 10,
             memoryUsage: 10,
@@ -112,6 +108,7 @@ class MaxiTestComponent {
             },
           ],
           typeMeta: {kind: 'Service'},
+          serviceAccountName: '',
         },
       ],
       status: {failed: 2, pending: 1, running: 3, succeeded: 5},
@@ -137,16 +134,9 @@ describe('ServiceDetailComponent', () => {
   let httpMock: HttpTestingController;
   let configService: ConfigService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        ObjectMetaComponent,
-        MaxiTestComponent,
-        CardComponent,
-        PropertyComponent,
-        ChipsComponent,
-        ServiceDetailComponent,
-      ],
+      declarations: [ObjectMetaComponent, MaxiTestComponent, CardComponent, PropertyComponent, ServiceDetailComponent],
       imports: [
         MatIconModule,
         MatCardModule,
@@ -157,14 +147,13 @@ describe('ServiceDetailComponent', () => {
         NoopAnimationsModule,
         PipesModule,
         HttpClientTestingModule,
-        MatIconModule,
         RouterModule,
       ],
-      providers: [ConfigService, NamespacedResourceService],
+      providers: [ConfigService, {provide: MESSAGES_DI_TOKEN, useValue: MESSAGES}],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
-    httpMock = TestBed.get(HttpTestingController);
-    configService = TestBed.get(ConfigService);
+    httpMock = TestBed.inject(HttpTestingController);
+    configService = TestBed.inject(ConfigService);
   }));
 
   beforeEach(() => {
@@ -176,7 +165,6 @@ describe('ServiceDetailComponent', () => {
 
   it('shows a maxi service', () => {
     const fixture = TestBed.createComponent(MaxiTestComponent);
-    const component = fixture.componentInstance;
 
     fixture.detectChanges();
     const debugElement = fixture.debugElement.query(By.css('kd-property.object-meta-name div.kd-property-value div'));

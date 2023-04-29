@@ -14,13 +14,13 @@
 
 import {HttpParams} from '@angular/common/http';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import {StorageClass, StorageClassList} from '@api/backendapi';
-import {Observable} from 'rxjs/Observable';
+import {StorageClass, StorageClassList} from '@api/root.api';
+import {Observable} from 'rxjs';
 
-import {ResourceListBase} from '../../../resources/list';
-import {NotificationsService} from '../../../services/global/notifications';
-import {EndpointManager, Resource} from '../../../services/resource/endpoint';
-import {ResourceService} from '../../../services/resource/resource';
+import {ResourceListBase} from '@common/resources/list';
+import {NotificationsService} from '@common/services/global/notifications';
+import {EndpointManager, Resource} from '@common/services/resource/endpoint';
+import {ResourceService} from '@common/services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
@@ -35,7 +35,7 @@ export class StorageClassListComponent extends ResourceListBase<StorageClassList
   constructor(
     private readonly sc_: ResourceService<StorageClassList>,
     notifications: NotificationsService,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super('storageclass', notifications, cdr);
     this.id = ListIdentifier.storageClass;
@@ -50,7 +50,7 @@ export class StorageClassListComponent extends ResourceListBase<StorageClassList
   }
 
   map(storageClassList: StorageClassList): StorageClass[] {
-    return storageClassList.storageClasses;
+    return storageClassList.items;
   }
 
   getDisplayColumns(): string[] {

@@ -22,7 +22,7 @@ import (
 
 	"github.com/kubernetes/dashboard/src/app/backend/plugin/apis/v1alpha1"
 
-	"github.com/emicklei/go-restful"
+	"github.com/emicklei/go-restful/v3"
 	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
 	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
 	"github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned"
@@ -119,7 +119,7 @@ func (cm *fakeClientManager) CSRFKey() string {
 	panic("implement me")
 }
 
-func (cm *fakeClientManager) HasAccess(authInfo api.AuthInfo) error {
+func (cm *fakeClientManager) HasAccess(authInfo api.AuthInfo) (string, error) {
 	panic("implement me")
 }
 

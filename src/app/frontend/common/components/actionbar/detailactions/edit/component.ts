@@ -13,11 +13,9 @@
 // limitations under the License.
 
 import {Component, Input} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {ObjectMeta, TypeMeta} from '@api/backendapi';
-import {Subscription} from 'rxjs/Subscription';
+import {ObjectMeta, TypeMeta} from '@api/root.api';
 
-import {VerberService} from '../../../../services/global/verber';
+import {VerberService} from '@common/services/global/verber';
 
 @Component({
   selector: 'kd-actionbar-detail-edit',
