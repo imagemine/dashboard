@@ -74,8 +74,8 @@ jobs:
 
       - name: Docker Login
         env:
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+          DOCKER_USER: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKER_PASS: ${{ secrets.DOCKER_HUB_TOKEN }}
         run: docker login -u $DOCKER_USER -p $DOCKER_PASS
 
       - name: Push Image
