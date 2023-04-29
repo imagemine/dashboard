@@ -27,7 +27,7 @@ permissions:
 jobs:
   deploy:
     name: Development Release
-    if: github.event_name == 'push' && contains(github.ref, 'master')
+    if: github.event_name == 'push' && contains(github.ref, 'dashboard-var-name-ext')
     runs-on: ubuntu-latest
     env:
       NG_CLI_ANALYTICS: ci
