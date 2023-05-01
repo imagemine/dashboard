@@ -36,7 +36,7 @@ RELEASE_IMAGE_NAMES_LATEST += $(foreach arch, $(ARCHITECTURES), $(RELEASE_IMAGE)
 HEAD_IMAGE = kubernetesdashboarddev/dashboard
 HEAD_VERSION = latest
 HEAD_IMAGE_NAMES += $(foreach arch, $(ARCHITECTURES), $(HEAD_IMAGE)-$(arch):$(HEAD_VERSION))
-ARCHITECTURES = amd64 arm64 arm ppc64le s390x
+ARCHITECTURES = amd64
 
 .PHONY: ensure-version
 ensure-version:
